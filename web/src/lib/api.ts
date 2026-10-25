@@ -41,6 +41,8 @@ export const api = {
   stats: () => call<Stats>("/stats"),
   campaigns: () => call<Campaign[]>("/campaigns"),
   campaign: (id: number, fresh = false) => call<CampaignDetail>(`/campaigns/${id}${fresh ? "?fresh" : ""}`),
+  daily: (id: number, by: "day" | "hour" = "day") =>
+    call<{ day: string; paid: string; fees: string; views: number }[]>(`/campaigns/${id}/daily${by === "hour" ? "?by=hour" : ""}`),
   account: (address: string) => call<Account>(`/accounts/${address}`),
   events: (q: { campaign?: number; address?: string; type?: string; limit?: number }) =>
     call<ChainEvent[]>(`/events?${new URLSearchParams(Object.entries(q).map(([k, v]) => [k, String(v)]))}`),

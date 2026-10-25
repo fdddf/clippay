@@ -1,6 +1,6 @@
 // Step 1: what creators should make, and who's asking.
-import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Lock, Plus, Trash2 } from "lucide-react";
+import { Lock, Plus, Trash2 } from "lucide-react";
+import { ImagePicker } from "@/components/ImagePicker";
 import { Field } from "@/components/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Prose } from "@/landing/Content";
-import { api, mediaUrl } from "@/lib/api";
 import { CATEGORIES, CATEGORY_LABEL, LIMITS, PLATFORMS, PLATFORM_LABEL } from "@/lib/brief";
 import { Markdown } from "@/lib/markdown";
-import { errorMessage } from "../errors";
 import { DISCLOSURE_RULE, TITLE_MAX, type Draft, type Errors } from "./draft";
-
-const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
-const LOGO_MAX = 256 * 1024;
 
 const BODY_TEMPLATE = `**Goal:** what the clips should achieve.
 
@@ -26,71 +21,6 @@ const BODY_TEMPLATE = `**Goal:** what the clips should achieve.
 
 **Must include**
 - #ad and your clippay: tag in the description`;
-
-function LogoPicker({ value, onChange }: { value: string | null; onChange: (hash: string | null) => void }) {
-  const input = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  async function pick(file: File | undefined) {
-    if (!file) return;
-    setError(null);
-    if (!LOGO_TYPES.includes(file.type)) return setError("Use a PNG, JPEG or WebP image");
-    if (file.size > LOGO_MAX) return setError("The image must be 256 KB or smaller");
-    setBusy(true);
-    try {
-      onChange((await api.uploadImage(file)).hash);
-    } catch (e) {
-      setError(await errorMessage(e));
-    } finally {
-      setBusy(false);
-      if (input.current) input.current.value = "";
-    }
-  }
-  return (
-    <div className="space-y-1.5">
-      <p className="text-sm leading-none font-medium">
-        Logo <span className="font-normal text-muted-foreground">(optional)</span>
-      </p>
-      <div className="flex items-center gap-3">
-        <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-[28%] border bg-muted text-muted-foreground">
-          {busy ? (
-            <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-          ) : value ? (
-            <img src={mediaUrl(value)!} alt="Your logo" className="size-full object-cover" />
-          ) : (
-            <ImagePlus className="size-5" aria-hidden="true" />
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => input.current?.click()} disabled={busy}>
-            {value ? "Replace" : "Upload"}
-          </Button>
-          {value && (
-            <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)} disabled={busy}>
-              Remove
-            </Button>
-          )}
-        </div>
-        <input
-          ref={input}
-          type="file"
-          accept={LOGO_TYPES.join(",")}
-          className="sr-only"
-          tabIndex={-1}
-          aria-label="Upload logo"
-          onChange={(e) => void pick(e.target.files?.[0])}
-        />
-      </div>
-      {error ? (
-        <p role="alert" className="text-xs text-destructive">
-          {error}
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground">Square, PNG/JPEG/WebP, up to 256 KB. Shown on your campaign card.</p>
-      )}
-    </div>
-  );
-}
 
 export function BriefStep({
   d,
@@ -119,7 +49,12 @@ export function BriefStep({
             <Input type="url" value={d.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" />
           </Field>
         </div>
-        <LogoPicker value={d.logo} onChange={(h) => set("logo", h)} />
+        <ImagePicker
+          label="Logo"
+          hint="Square, PNG/JPEG/WebP, up to 256 KB. Shown on your campaign card."
+          value={d.logo}
+          onChange={(h) => set("logo", h)}
+        />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="platform">Platform</Label>

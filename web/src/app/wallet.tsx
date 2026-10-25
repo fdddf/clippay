@@ -2,6 +2,7 @@
 // smart-account-kit, Freighter) load only when someone signs in or a page
 // needs to send a transaction, so browsing stays light.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { SESSION_KEY } from "@/lib/session";
 import type { Wallet } from "@/lib/wallet";
 import { SignInDialog } from "./SignInDialog";
 
@@ -63,6 +64,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const disconnect = useCallback(async () => {
     if (wallet) await (await loadWallet()).disconnect(wallet);
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {}
     setWallet(null);
   }, [wallet]);
 

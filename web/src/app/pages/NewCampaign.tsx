@@ -101,7 +101,9 @@ export default function NewCampaign() {
   const [launched, setLaunched] = useState<Campaign | null>(null);
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }));
-  useEffect(() => saveDraft(d), [d]);
+  useEffect(() => {
+    saveDraft(d);
+  }, [d]);
 
   // Prefill the brand from the account's profile.
   const profile = account.data?.profile;

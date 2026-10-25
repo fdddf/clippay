@@ -1,4 +1,5 @@
-import { Outlet } from "react-router";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router";
 import { SiteFooter } from "@/landing/Shell";
 import { AppHeader } from "./AppHeader";
 import { useStats } from "./queries";
@@ -6,6 +7,11 @@ import { useStats } from "./queries";
 /** Header, page and footer for every app route. */
 export function Layout() {
   const stats = useStats();
+  // A new page starts at the top (filters only change the query string).
+  const { pathname } = useLocation();
+  useEffect(() => {
+    scrollTo(0, 0);
+  }, [pathname]);
   return (
     <div className="flex min-h-svh flex-col">
       <a

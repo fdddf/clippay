@@ -6,9 +6,10 @@ import {
   getNetworkDetails,
   isConnected,
   requestAccess,
+  signAuthEntry,
   signTransaction,
 } from "@stellar/freighter-api";
-import { contract } from "@stellar/stellar-sdk";
+import { authorizeEntry, contract, xdr } from "@stellar/stellar-sdk";
 import { IndexedDBStorage, SmartAccountKit } from "smart-account-kit";
 import type { PoolClient } from "@clippay/pool-client";
 import { authenticate, buildWithdrawalPayment, type Anchor, type Sep24Transaction } from "@clippay/anchor";
@@ -162,4 +163,32 @@ export async function payAnchor(w: Wallet, tx: Sep24Transaction): Promise<string
   const res = await kit().signAndSubmit(payment);
   if (!res.success) throw res.error;
   return res.hash;
+}
+
+/**
+ * Sign a ClipPay sign-in challenge (a Soroban auth entry, see
+ * verifier/src/session.ts) and return the signed entry as XDR.
+ */
+export async function signChallenge(w: Wallet, entryXdr: string, expirationLedger: number): Promise<string> {
+  const entry = xdr.SorobanAuthorizationEntry.fromXDR(entryXdr, "base64");
+  if (w.kind === "passkey") {
+    return (await kit().signAuthEntry(entry, { contextRuleIds: [0] })).toXDR("base64");
+  }
+  if (w.kind === "freighter") {
+    const signed = await authorizeEntry(
+      entry,
+      async (preimage) => {
+        const r = await signAuthEntry(preimage.toXDR("base64"), {
+          networkPassphrase: config.networkPassphrase,
+          address: w.address,
+        });
+        if (r.error || !r.signedAuthEntry) throw new Error(r.error?.message ?? "Freighter didn't sign");
+        return Uint8Array.from(atob(r.signedAuthEntry), (c) => c.charCodeAt(0));
+      },
+      expirationLedger,
+      config.networkPassphrase,
+    );
+    return signed.toXDR("base64");
+  }
+  throw new Error("Read-only preview — sign in to make changes");
 }

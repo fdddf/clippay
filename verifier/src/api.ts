@@ -6,6 +6,7 @@
 //   GET  /api/stats                    totals for the landing page
 //   GET  /api/campaigns                every campaign, with its brief
 //   GET  /api/campaigns/:id            one campaign, its posts, checks and history
+//   GET  /api/campaigns/:id/daily[?by=hour]  spend and new views per day or hour (UTC)
 //   GET  /api/accounts/:address        dashboard data for one account
 //   GET  /api/events?campaign=&address=&type=&limit=   with each address's profile
 //   GET  /api/briefs/:hash · POST /api/briefs           content-addressed briefs
@@ -357,6 +358,31 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
       return json(campaigns.reverse(), 200, { "Cache-Control": "public, max-age=10" });
     }
 
+    const daily = m(/^\/api\/campaigns\/(\d+)\/daily$/);
+    if (req.method === "GET" && daily) {
+      // Each settlement records a creator's running view count; a day's new
+      // views are the growth of each creator's count over the previous day.
+      const bucket = new URL(req.url).searchParams.get("by") === "hour" ? "%Y-%m-%dT%H:00Z" : "%Y-%m-%d";
+      const { results } = await env.DB.prepare(
+        `SELECT strftime('${bucket}', ts, 'unixepoch') AS day, address, MAX(CAST(views AS INTEGER)) AS views,
+                SUM(CAST(amount AS INTEGER)) AS paid, SUM(CAST(fee AS INTEGER)) AS fees
+         FROM events WHERE campaign = ? AND type = 'settled' GROUP BY day, address ORDER BY day`,
+      )
+        .bind(Number(daily[1]))
+        .all<{ day: string; address: string; views: number; paid: number; fees: number }>();
+      const last = new Map<string, number>();
+      const days = new Map<string, { day: string; paid: bigint; fees: bigint; views: number }>();
+      for (const r of results) {
+        const d = days.get(r.day) ?? { day: r.day, paid: 0n, fees: 0n, views: 0 };
+        d.paid += BigInt(r.paid);
+        d.fees += BigInt(r.fees);
+        d.views += Math.max(0, r.views - (last.get(r.address) ?? 0));
+        last.set(r.address, r.views);
+        days.set(r.day, d);
+      }
+      return json([...days.values()], 200, { "Cache-Control": "public, max-age=60" });
+    }
+
     let r = m(/^\/api\/campaigns\/(\d+)$/);
     if (req.method === "GET" && r) {
       const id = Number(r[1]);
@@ -409,9 +435,12 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
         100,
       );
       const monthStart = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1) / 1000;
-      const earnedThisMonth = history
-        .filter((e) => e.type === "settled" && e.address === address && e.ts >= monthStart)
-        .reduce((n, e) => n + BigInt(e.amount ?? "0"), 0n);
+      const { results: month } = await env.DB.prepare(
+        "SELECT amount FROM events WHERE type = 'settled' AND address = ? AND ts >= ?",
+      )
+        .bind(address, monthStart)
+        .all<{ amount: string }>();
+      const earnedThisMonth = month.reduce((n, e) => n + BigInt(e.amount ?? "0"), 0n);
       const now = Date.now() / 1000;
       const sum = (xs: bigint[]) => xs.reduce((n, x) => n + x, 0n).toString();
       const account: Account = {
