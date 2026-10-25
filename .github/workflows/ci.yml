@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy -p campaign-pool --all-targets -- -D warnings
+      # The Wasm build lets `upgrade_keeps_state` upgrade to a real binary.
+      - run: cargo build -p campaign-pool --target wasm32v1-none --release
+      - name: Unit, auth, pause, upgrade, TTL and paging tests + funds invariant (proptest)
+        run: cargo test -p campaign-pool
+        env:
+          PROPTEST_CASES: "2000"
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      # Contract error codes ↔ web messages ↔ generated bindings stay in sync.
+      - run: pnpm --filter @clippay/pool-client test
+      - run: pnpm --filter verifier test
+      - run: pnpm --filter web build
+        env:
+          VITE_RPC_URL: https://soroban-testnet.stellar.org
+          VITE_NETWORK_PASSPHRASE: Test SDF Network ; September 2015
