@@ -1,7 +1,9 @@
 # ClipPay 产品打磨与改进计划
 
-> 版本 v1 · 2026-10-25 16:40 WET · 作者：产品负责人（Claude，代拟）
-> 状态：草案，待确认后按阶段实施。每一项都有编号，实施时逐项勾选。
+> 版本 v2 · 2026-10-25 18:40 WET（v1：16:40）· 作者：产品负责人（Claude，代拟）
+> 状态：执行中。P0 已完成 6/7 项（只差视频和 deck），P1 的限时代码部分已完成。最新进度见[第 8 节](#8-实施顺序与进度)。
+>
+> 在线演示：<https://clippay.umesok.workers.dev> · 仓库：<https://github.com/fdddf/clippay>
 
 ## 0. 这份计划回答什么
 
@@ -75,6 +77,8 @@ ClipPay 目前是一个能在 testnet 上跑通全流程的黑客松 MVP：品�
 ---
 
 ## 2. 现状盘点
+
+> 本节是 v1（10/25 16:40）时的盘点，保留作为基线。其中大部分差距已在当天处理，当前状态见第 8 节。
 
 ### 2.1 已完成且验证过的
 
@@ -288,34 +292,76 @@ clippay/
 
 ---
 
-## 8. 实施顺序（下一步）
+## 8. 实施顺序与进度
 
-确认本计划后，按这个顺序推进。每完成一项就在这里勾选：
+### 8.0 总览（2026-10-25 18:40 WET，距提交截止约 17 小时）
 
-- [x] P0-1 git 初始化 + 公开仓库：https://github.com/fdddf/clippay（CI 绿）
-- [x] P0-2 / S1 集中配置 `deployments/testnet.json`（web、verifier、脚本都从这里读；`.env` 只放密钥）
-- [x] P0-5a–e 快速修复（a/c/d/e 在 P1 时顺带完成；b：提现前读取 SEP-24 `/info` 限额并校验金额和余额）
-- [x] P0-4 演示数据 seed：`pnpm seed`，3 个虚构品牌活动 + 7 个提交
-- [x] P0-3 公网部署：https://clippay.umesok.workers.dev（Worker + Durable Object，每分钟自动结算）
-- [x] P0-7 README 定稿（在线地址、合约 ID、交易证据、演示数据说明、本周末进度）
-- [ ] P0-6 视频脚本 + deck 大纲（录制需要你本人参与）
+| 阶段 | 进度 | 说明 |
+|---|---|---|
+| P0 参赛提交 | 6/7 | 只剩 P0-6 视频 + deck（录制需要你本人） |
+| P1 限时代码部分 | 已完成 | 合约 v2、校验规则、relay 限流、bindings、无障碍、CI、文档；需要外部参与的条目延后 |
+| P2 | 未开始 | — |
 
-**已决策（2026-10-25）：**
-1. **D1**：降到 soroban-sdk 28，使用 OZ 0.8.0 官方库（`stellar-access` Ownable、`stellar-contract-utils` Pausable/Upgradeable）。
-2. **平台费**：结算时从每笔付款中收取，默认 5%（500 bps），合约硬上限 20%，每个活动创建时固定费率。
-3. **执行顺序**：先做限时的代码类 P1，再做 P0 发布动作。
+当前线上部署：
 
-4. **公网部署**：使用当前 wrangler 登录的 Cloudflare 账号；仓库 `fdddf/clippay`（公开）。
+| | |
+|---|---|
+| 网站 + API | <https://clippay.umesok.workers.dev>（Cloudflare Worker，账号为当前 wrangler 登录账号） |
+| 演示合约（v2） | `CBYEMM7I4OXD5DTWGKCKT7NDLRB357W5Q32ZUX3Z7E5MQP37UQQYWVXT`，Wasm `0b58c98a…`，与仓库代码一致 |
+| 预发合约（v2，做过链上升级） | `CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2` |
+| 线上验证者 | `GCDOZOD74VZJB7FPKYPGEWK5V4QDIPKPRR5CWNMEHARVQCSNDVVOER6I`（`clippay-verifier-prod`，只在 Worker secret 里） |
+| 平台费金库 | `GCBQ55XIHJZGOJGSJHUWIL7CZL7DDYWBZXB6AFW226JV52MN4374MLQ7`（5%） |
+| CI | GitHub Actions：合约（fmt/clippy/Wasm 构建/测试 + 2,000 例属性测试）、TypeScript（typecheck/三套测试/web 构建），全部通过 |
 
-### 8.1 P1 进度（2026-10-25 赛前限时版）
+### 8.1 P0 进度
 
-合约 v2 已部署到 testnet：`CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2`，并已在链上走过一次 `upgrade` → `migrate`。
+- [x] P0-1 git 初始化 + 公开仓库：<https://github.com/fdddf/clippay>，按模块分次提交；活动照片和赛事笔记没有入库
+- [x] P0-2 / S1 集中配置 `deployments/testnet.json`：web、verifier、e2e 脚本、Worker 都从这里读；`.env` 只放密钥和可调参数
+- [x] P0-3 公网部署：一个 Worker 同时提供静态网站（SPA 路由）和 `/api`；`/api` 由单个 Durable Object 运行验证服务和 relay，交易串行发出；Durable Object 用自己的 alarm 每分钟结算一次（cron 只负责补设 alarm）
+- [x] P0-4 演示数据：`pnpm seed` 建了 3 个虚构品牌的活动（简报在 `docs/briefs/`）和 7 个提交；mock 播放量改成"先快后平"的曲线，预算不会在一小时内被耗光
+- [x] P0-5 快速修复
+  - a 已封顶或没有应付金额时不发交易
+  - b 提现前读取 anchor 的 SEP-24 `/info`：显示单笔范围（testanchor 为 1–10 XLM），超出范围或超过余额时在弹窗和 passkey 之前拦下，有单元测试
+  - c 钱包取消、拒签、余额不足、网络不匹配、超时等错误文案
+  - d 建活动前做余额预检
+  - e 合约错误码与前端文案、生成的 bindings 一致性测试
+- [ ] P0-6 视频脚本 + deck（录制需要你本人参与）
+- [x] P0-7 README：在线地址、试用步骤、当前合约 ID 和交易证据、Cloudflare 部署说明、演示数据说明、本周末进度
+
+**线上验证过的内容：**
+- 首页和活动页读取链上实时数据；手机宽度无横向滚动；控制台无报错。
+- 通过公网 relay 跑通 passkey 全流程：建钱包 → 免手续费提交 → 结算。交易：钱包部署 `58bb1d87…`、提交 `ca49f1e3…`、结算 `77c2cf1b…`。
+- 无人操作时每分钟自动结算（日志和链上交易均可见）。
+
+### 8.2 P1 进度（赛前限时版）
 
 | 状态 | 条目 |
 |---|---|
-| ✅ 完成 | C1 Ownable 两步转移 + 所有特权函数测试未授权调用 · C2 暂停（退款不受影响）· C3 升级 + `migrate` + `scripts/upgrade.sh` + RUNBOOK SOP · C4 代币白名单 + 记录小数位 · C5 创作者分页存储（提交成本不随人数增长，有测试）· C6 平台费 + 资金守恒属性测试 · C8 TTL 策略（可由 owner 调整的 `RentPolicy`）· V2 归属标签默认开启 · V3 反刷量规则 v1（转人工复核 + `/review` 接口）· V4 #ad 披露检查 · B2 relay 按 IP/钱包限流 + sponsor 余额告警 · F1 生成的 TS bindings（CLI 的 bindings 命令已弃用，改用 JS SDK 的 `stellar-js generate`）· F8 无障碍（axe 明暗两种主题 0 个 serious/critical）· S3 · S7 中的 THREAT_MODEL、RUNBOOK |
-| ◐ 部分 | C9：proptest 资金守恒不变式本地跑过 10,000 例（CI 中 2,000 例）；Scout 未接入 · F5：已改为 history 路由（旧 `#/` 链接自动跳转），OG 分享卡片随 P0-3 Worker 部署做 · S5：CI 已写好（fmt/clippy/test/typecheck/错误码一致性/web build），推到 GitHub 后才会运行 |
-| ➕ 顺带完成的 P0 项 | P0-5a 跳过无效结算 · P0-5c 部分错误文案 · P0-5d 建活动前余额预检 · P0-5e 错误码一致性测试 |
-| ⏭ 延后 | C7 争议窗口 · C10 可验证构建（随 P0-1 建仓库一起做）· V1（需要 YouTube API key）· V5 · B1/B3/B4/B5（随 Cloudflare 部署）· B6 · F2/F3/F4/F6/F7/F9 · M1–M5（需要外部参与）· S2/S6/S8 |
+| ✅ 完成 | C1 Ownable 两步转移 + 所有特权函数测试未授权调用 · C2 暂停（退款不受影响）· C3 升级 + `migrate` + `scripts/upgrade.sh` + RUNBOOK SOP（已在预发合约上链上执行）· C4 代币白名单 + 记录小数位 · C5 创作者分页存储（提交成本不随人数增长，有测试）· C6 平台费 + 资金守恒属性测试 · C8 可由 owner 调整的 `RentPolicy` · V2 归属标签默认开启 · V3 反刷量规则 v1（转人工复核 + `/review` 接口）· V4 #ad 披露检查 · B2 relay 按 IP/钱包限流 + sponsor 余额告警 · F1 生成的 TS bindings（CLI 的 bindings 命令已弃用，改用 JS SDK 的 `stellar-js generate`）· F8 无障碍（axe 明暗两种主题 0 个 serious/critical）· S3 · S5 CI（已在 GitHub 上运行并通过）· S7 THREAT_MODEL、RUNBOOK |
+| ◐ 部分 | C9：属性测试本地跑过 10,000 例、CI 跑 2,000 例；Scout 未接入 · B1：Worker + Durable Object 串行发交易 + 每分钟结算 + Cloudflare 日志已上线；帖子状态和复核结论还只存在 Durable Object 内存里，重启会丢 · B5：线上验证者用独立密钥，密钥都在 Worker secrets 里，并已通过 `set_verifier` 实际轮换过一次；管理员仍是单个密钥 · F5：已改为 history 路由（旧 `#/` 链接自动跳转）；OG 分享卡片未做 |
+| ⏭ 延后 | C7 争议窗口 · C10 可验证构建（SEP-55 release 工作流）· V1（需要 YouTube API key）· V5 多验证者 · B3 事件索引 · B4 监控 · B6 主网成本实测 · F2/F3/F4/F6/F7/F9 · M1–M5（需要外部参与）· S2/S6/S8 |
 
-**testnet 成本实测（补充 B6）：** 上传 26 KB 合约 Wasm 约 7,400 XLM；把实例 TTL 绑到活动周期会让建活动花到约 28,000 XLM，因此改成了可配置的租金策略（testnet：活动结束后再留 1 天，实例 7 天续期）。sponsor 代付的钱包部署约 41 XLM，首次提交约 107 XLM（新建两个 7 天的持久条目），结算约 0.001 XLM。relay 的单笔费用上限在 testnet 上调到 250 XLM。
+**testnet 成本实测（补充 B6）：**
+- 上传 26 KB 合约 Wasm：约 7,400 XLM。
+- 租金策略：最初把实例 TTL 绑到活动周期，建一个活动要花约 28,000 XLM，所以改成了 owner 可调的租金策略。testnet 上设为活动结束后再留 1 天、实例 7 天续期。
+- sponsor 代付：钱包部署约 41 XLM，首次提交约 107 XLM（新建两个 7 天的持久条目）。relay 的单笔费用上限在 testnet 上调到 250 XLM。
+- 结算：约 0.001 XLM。
+
+### 8.3 下一步
+
+1. **P0-6 视频 + deck**：先由我写好 3 分钟视频脚本（按线上网站逐步点击）和 10 页 deck，你来录制。
+2. 可选，提交前：活动页 OG 分享卡片（F5 剩余部分）；把帖子状态和复核结论写进 Durable Object 存储（B1 剩余部分）。
+3. 赛后：C10 可验证构建、C7 争议窗口、V1 接真实 YouTube 数据，以及第 4 节其余条目。
+
+**需要留意：**
+- 有人在 18:06 部署之后给这个 Worker 绑定了自定义域名 `clippay.hr.edu.kg`，不是本会话做的。如果不是你加的，请在 Cloudflare 控制台确认。
+- 公网 e2e 测试在 Kitebase 活动里留下一条 `e2e-…` 链接的提交，已经上链，无法删除。
+- 另一个会话在 5173/8787 端口运行的旧服务仍指向旧合约。本地验证服务使用 `clippay-verifier` 密钥，已不能给线上合约结算，因此不会和线上验证者冲突。
+- 本地开发要给新合约结算时，可以用 `clippay-verifier-prod` 的密钥，但不要和线上 Worker 同时运行。
+
+### 8.4 已决策（2026-10-25）
+
+1. **D1**：降到 soroban-sdk 28，使用 OZ 0.8.0 官方库（`stellar-access` Ownable、`stellar-contract-utils` Pausable/Upgradeable）。
+2. **平台费**：结算时从每笔付款中收取，默认 5%（500 bps），合约硬上限 20%，每个活动创建时固定费率。
+3. **执行顺序**：先做限时的代码类 P1，再做 P0 发布动作。
+4. **公网部署**：使用当前 wrangler 登录的 Cloudflare 账号；仓库 `fdddf/clippay`（公开）。

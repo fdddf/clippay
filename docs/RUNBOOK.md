@@ -8,6 +8,24 @@ the `campaign-pool` contract alias. Add `--network mainnet` and the right keys o
 pool() { stellar contract invoke --id campaign-pool --network testnet --source-account clippay-admin -- "$@"; }
 ```
 
+## Production (Cloudflare)
+
+The live deployment is one Worker, `clippay` ([`verifier/wrangler.jsonc`](../verifier/wrangler.jsonc)):
+static web app + `/api` → a Durable Object running the verifier and relay. It settles
+every campaign once a minute from its own alarm; the cron trigger only re-arms it.
+
+```bash
+pnpm deploy:cloudflare                         # build web, deploy Worker, push secrets
+cd verifier && pnpm exec wrangler tail clippay # live logs
+cd verifier && pnpm exec wrangler deployments list
+curl -s https://clippay.umesok.workers.dev/api/health
+```
+
+Secrets (`VERIFIER_SECRET`, `SPONSOR_SECRET`, `REVIEW_TOKEN`) are pushed by the deploy
+script over stdin. The Worker signs with `clippay-verifier-prod`, a key used nowhere else,
+so local verifiers can't collide with its sequence numbers. Post statuses and review
+decisions live in the Durable Object's memory and are lost when it restarts.
+
 ## Health
 
 ```bash
@@ -35,8 +53,11 @@ contract bug is suspected. The web app shows a maintenance banner while paused.
 ```bash
 stellar keys generate clippay-verifier-2 --network testnet --fund
 pool set_verifier --verifier $(stellar keys address clippay-verifier-2)
-# update VERIFIER_SECRET in verifier/.env (or the Worker secret) and restart
+VERIFIER_KEY=clippay-verifier-2 pnpm deploy:cloudflare   # Worker; or update verifier/.env locally
 ```
+
+Done once on 2026-10-25: the demo contract moved from `clippay-verifier` to
+`clippay-verifier-prod`, and `deployments/testnet.json` records the current verifier.
 
 The verifier warns at start-up if its key doesn't match the contract's.
 

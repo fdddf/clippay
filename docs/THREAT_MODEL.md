@@ -21,7 +21,7 @@ in the contract, payouts go straight to creators.
 | Role | Key | Can | Cannot |
 |---|---|---|---|
 | Owner | `clippay-admin` (move to a multisig before mainnet) | pause/unpause, upgrade + migrate, set verifier, fee (≤ 20%) and treasury, allow/disallow tokens, set rent policy, transfer ownership (two-step) | Move campaign funds directly; change a live campaign's fee |
-| Verifier | `VERIFIER_SECRET` | Report view counts → pay creators at the campaign's rate, up to the per-creator cap and the remaining budget | Pay anyone who didn't submit; exceed rate or cap; lower a reported count; settle after the grace window |
+| Verifier | `VERIFIER_SECRET` (production: `clippay-verifier-prod`, Worker secret) | Report view counts → pay creators at the campaign's rate, up to the per-creator cap and the remaining budget | Pay anyone who didn't submit; exceed rate or cap; lower a reported count; settle after the grace window |
 | Brand | Their wallet | Create, top up, refund after settlement closes | Refund early; claw back settled payouts |
 | Creator | Passkey | Submit once per campaign; spend their own balance | Settle their own views |
 | Relay sponsor | `SPONSOR_SECRET` | Pay fees for allow-listed calls | Spend for anything else (auth entries must be address-signed; host function allow-list; fee cap; rate limits) |
@@ -31,7 +31,7 @@ in the contract, payouts go straight to creators.
 | # | Threat | Impact | Mitigation today | Planned |
 |---|---|---|---|---|
 | T1 | **Fake views** (bots, view farms) drain a budget | High | Per-creator cap; payout checks (ownership tag, #ad, view-spike, engagement, channel-age) hold suspicious posts for review | Settlement maturity + brand dispute window (P1-C7); multi-source view data |
-| T2 | **Verifier key leak** | High | Contract caps the damage: only submitted creators, only at the campaign rate, up to the cap; owner can `set_verifier` or `pause` | 2-of-3 verifier quorum (P1-V5); key in Worker secrets / KMS |
+| T2 | **Verifier key leak** | High | Contract caps the damage: only submitted creators, only at the campaign rate, up to the cap; owner can `set_verifier` (rotation exercised once) or `pause`; production key lives only in Worker secrets | 2-of-3 verifier quorum (P1-V5); KMS |
 | T3 | **Owner key leak** | High | Owner cannot move campaign funds; fee hard-capped at 20% and fixed per campaign; refunds work while paused | Multisig owner; upgrade timelock |
 | T4 | **Malicious upgrade** | High | Owner-only; `version()` + `migrate` are on-chain and visible; error codes frozen | SEP-55 verifiable builds so every Wasm hash maps to a commit; timelock |
 | T5 | **Sponsor drained** | Medium | Host-function allow-list, address-only auth, simulation before paying, per-tx fee cap, per-IP and per-wallet rate limits, low-balance alert | Move to OZ Channels; per-wallet daily budget |
