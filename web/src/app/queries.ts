@@ -1,0 +1,22 @@
+// React Query hooks over the API. Chain data refreshes every 15 s while visible.
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 10_000, refetchInterval: 15_000, refetchOnWindowFocus: true, retry: 1 },
+  },
+});
+
+export const keys = {
+  stats: ["stats"] as const,
+  campaigns: ["campaigns"] as const,
+  campaign: (id: number) => ["campaign", id] as const,
+  account: (address: string) => ["account", address] as const,
+};
+
+export const useStats = () => useQuery({ queryKey: keys.stats, queryFn: api.stats });
+export const useCampaigns = () => useQuery({ queryKey: keys.campaigns, queryFn: api.campaigns });
+export const useCampaign = (id: number) => useQuery({ queryKey: keys.campaign(id), queryFn: () => api.campaign(id) });
+export const useAccount = (address: string | null | undefined) =>
+  useQuery({ queryKey: keys.account(address ?? ""), queryFn: () => api.account(address!), enabled: !!address });

@@ -21,6 +21,15 @@
     "bindings": [{ "name": "VERIFIER", "class_name": "VerifierObject" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["VerifierObject"] }],
+  // Event index, campaign briefs, uploaded images and profiles (migrations/).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "clippay",
+      "database_id": "1f0617b2-8576-4b30-b9b7-084ca10e3162",
+      "migrations_dir": "migrations"
+    }
+  ],
   "triggers": { "crons": ["* * * * *"] },
   "vars": {
     "NETWORK": "testnet",

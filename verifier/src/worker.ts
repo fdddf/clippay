@@ -8,10 +8,17 @@ import { DurableObject } from "cloudflare:workers";
 import { describeError } from "@clippay/pool-client";
 import { createVerifier, envReader, type Verifier } from "./core.ts";
 import { ENTRY_HTML, LANDING_PAGES, entryFor } from "../../web/src/routing.ts";
+import { deployment } from "@clippay/deployments";
+import { handleApi } from "./api.ts";
+import { indexEvents } from "./indexer.ts";
 
 interface Env {
   VERIFIER: DurableObjectNamespace<VerifierObject>;
   ASSETS: Fetcher;
+  DB: D1Database;
+  NETWORK?: string;
+  SESSION_SECRET?: string;
+  SETTLE?: string;
   [key: string]: unknown;
 }
 
@@ -36,12 +43,22 @@ export class VerifierObject extends DurableObject<Env> {
   }
 
   async alarm(): Promise<void> {
-    // Local `wrangler dev` sets SETTLE=off so it never competes with production.
-    if (this.env.SETTLE === "off") return;
     try {
-      await (await this.get()).settleAll();
+      // Local `wrangler dev` sets SETTLE=off so it never competes with production.
+      if (this.env.SETTLE !== "off") await (await this.get()).settleAll();
     } catch (e) {
       console.error(describeError(e));
+    }
+    try {
+      const d = deployment(this.env.NETWORK ?? "testnet");
+      const n = await indexEvents(this.env.DB, {
+        rpcUrl: d.rpcUrl,
+        networkPassphrase: d.networkPassphrase,
+        contractId: d.campaignPool.contractId,
+      });
+      if (n) console.log(`[index] ${n} new event(s)`);
+    } catch (e) {
+      console.error("[index]", describeError(e));
     } finally {
       await this.ctx.storage.setAlarm(Date.now() + PASS_MS);
     }
@@ -68,6 +85,13 @@ export default {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/api/")) {
       try {
+        const handled = await handleApi(req, {
+          DB: env.DB,
+          NETWORK: env.NETWORK,
+          SESSION_SECRET: env.SESSION_SECRET,
+          verifierFetch: (path) => stub(env).fetch(new Request(`https://verifier/api${path}`)),
+        }, url.pathname);
+        if (handled) return handled;
         return await stub(env).fetch(req);
       } catch (e) {
         return Response.json({ error: describeError(e) }, { status: 500 });

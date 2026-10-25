@@ -9,6 +9,8 @@ cd "$(dirname "$0")/.."
 
 pnpm --filter web build
 cd verifier
+# Schema first, so the new code never runs against old tables.
+pnpm exec wrangler d1 migrations apply clippay --remote
 pnpm exec wrangler deploy
 
 # The deployed verifier signs with its own key (VERIFIER_KEY, default
@@ -20,7 +22,7 @@ VERIFIER_SECRET=$(stellar keys show "$VERIFIER_KEY")
 # Secrets go over stdin, never on the command line.
 VERIFIER_SECRET="$VERIFIER_SECRET" python3 - <<'PY' | pnpm exec wrangler secret bulk
 import json, os
-keys = {"SPONSOR_SECRET", "REVIEW_TOKEN", "YOUTUBE_API_KEY", "OZ_CHANNELS_API_KEY", "ALERT_WEBHOOK_URL"}
+keys = {"SPONSOR_SECRET", "REVIEW_TOKEN", "SESSION_SECRET", "YOUTUBE_API_KEY", "OZ_CHANNELS_API_KEY", "ALERT_WEBHOOK_URL"}
 out = {"VERIFIER_SECRET": os.environ["VERIFIER_SECRET"]}
 for line in open(".env"):
     k, _, v = line.strip().partition("=")

@@ -116,6 +116,8 @@ NETWORK=$NETWORK
 VERIFIER_SECRET=$(stellar keys show clippay-verifier)
 SPONSOR_SECRET=$(stellar keys show clippay-sponsor)
 REVIEW_TOKEN=$(openssl rand -hex 16)
+# signs web sign-in sessions (verifier/src/session.ts)
+SESSION_SECRET=$(openssl rand -hex 32)
 # mock | youtube (needs YOUTUBE_API_KEY)
 VIEW_PROVIDER=mock
 SPONSOR_MAX_FEE_XLM=250

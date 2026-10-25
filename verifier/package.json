@@ -12,7 +12,9 @@
     "e2e:anchor": "tsx --env-file=.env scripts/e2e-anchor.ts",
     "test": "tsx --test test/*.test.ts",
     "seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
-    "dev:worker": "pnpm --filter web build && wrangler dev"
+    "dev:worker": "pnpm --filter web build && wrangler dev",
+    "seed:metadata": "tsx --env-file-if-exists=.env scripts/seed-metadata.ts",
+    "e2e:signin": "tsx --env-file-if-exists=.env scripts/e2e-signin.ts"
   },
   "dependencies": {
     "@clippay/anchor": "workspace:*",
