@@ -16,7 +16,7 @@ export const LANDING_PAGES: Record<string, string> = {
 };
 
 /** Path prefixes the new app owns. Grows as pages migrate from the legacy app. */
-export const APP_PREFIXES: string[] = ["/_ui", "/campaigns", "/c"];
+export const APP_PREFIXES: string[] = ["/_ui", "/campaigns", "/c", "/b", "/new"];
 
 /** "/security/" → "/security"; "/" stays "/". */
 const normalize = (path: string) => (path.length > 1 ? path.replace(/\/+$/, "") || "/" : path);

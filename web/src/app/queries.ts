@@ -20,3 +20,11 @@ export const useCampaigns = () => useQuery({ queryKey: keys.campaigns, queryFn: 
 export const useCampaign = (id: number) => useQuery({ queryKey: keys.campaign(id), queryFn: () => api.campaign(id) });
 export const useAccount = (address: string | null | undefined) =>
   useQuery({ queryKey: keys.account(address ?? ""), queryFn: () => api.account(address!), enabled: !!address });
+
+/** A wallet's balance of the payout token, read over RPC (loads the Stellar SDK on first use). */
+export const useBalance = (address: string | null | undefined) =>
+  useQuery({
+    queryKey: ["balance", address ?? ""],
+    queryFn: async () => (await import("@/lib/stellar")).tokenBalance(address!),
+    enabled: !!address,
+  });

@@ -19,6 +19,18 @@ export function formatUnits(units: bigint, decimals = 7, maxFrac = 2, minFrac = 
   return `${neg ? "-" : ""}${whole}${frac ? `.${frac}` : ""}`;
 }
 
+/**
+ * "12.5" → token units (bigint), or null if it isn't a positive amount with
+ * at most `decimals` decimal places.
+ */
+export function parseUnits(text: string, decimals = 7): bigint | null {
+  const m = text.trim().replace(/,/g, "").match(/^(\d*)(?:\.(\d*))?$/);
+  if (!m || (!m[1] && !m[2])) return null;
+  const frac = m[2] ?? "";
+  if (frac.length > decimals) return null;
+  return BigInt(m[1] || "0") * 10n ** BigInt(decimals) + BigInt(frac.padEnd(decimals, "0") || "0");
+}
+
 /** 12,400 → "12.4K"; below 10,000 stays exact. */
 export function compactNumber(n: number | bigint): string {
   const v = Number(n);

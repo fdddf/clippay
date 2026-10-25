@@ -8,9 +8,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { Layout } from "./Layout";
 import { queryClient } from "./queries";
 import { WalletProvider } from "./wallet";
+import BriefPage from "./pages/BriefPage";
 import CampaignPage from "./pages/Campaign";
 import Campaigns from "./pages/Campaigns";
 import { NotFound } from "./pages/NotFound";
+
+const NewCampaign = lazy(() => import("./pages/NewCampaign"));
 
 const UiPreview = import.meta.env.DEV ? lazy(() => import("./pages/UiPreview.tsx")) : null;
 
@@ -21,6 +24,15 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/c/:id" element={<CampaignPage />} />
+        <Route path="/b/:hash" element={<BriefPage />} />
+        <Route
+          path="/new"
+          element={
+            <Suspense fallback={<div className="min-h-[calc(100svh-4rem)]" />}>
+              <NewCampaign />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

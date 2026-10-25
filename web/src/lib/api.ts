@@ -45,6 +45,7 @@ export const api = {
   events: (q: { campaign?: number; address?: string; type?: string; limit?: number }) =>
     call<ChainEvent[]>(`/events?${new URLSearchParams(Object.entries(q).map(([k, v]) => [k, String(v)]))}`),
 
+  brief: (hash: string) => call<Brief>(`/briefs/${hash}`),
   uploadImage: (file: Blob) =>
     call<{ hash: string; url: string }>("/media", { method: "POST", headers: { "Content-Type": file.type }, body: file }),
   createBrief: (brief: Brief) =>

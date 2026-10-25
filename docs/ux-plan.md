@@ -445,7 +445,8 @@
 | A3 Landing page | ✅ 已上线 | `/` 构建时预渲染（`web/scripts/prerender.ts`），只含 landing 用到的样式（`styles/landing.css`，9.4 KB gzip，内联进 HTML）；首屏 JS 3.1 KB gzip，实时数据由 `src/landing/client.ts` 填充；OG 图 `public/og.png`（源文件 `web/design/og.svg`）。Lighthouse（本地构建，模拟慢速 4G）：手机与桌面四项均为 100，手机 LCP 1.5s |
 | A4 外框与内容页 | ✅ 已上线 | `/how-it-works`、`/security`、`/terms`、`/privacy`；三组截图与 axe（明 / 暗、375px）均通过 |
 | A5 活动市场与详情 | ✅ 已上线 | `/campaigns`（筛选、排序写进 URL）；`/c/:id` 简报 / 规则 / 创作者三个页签，排行可展开查看每笔链上付款；参加卡（手机端底部固定按钮）、"我的提交"时间线与暂缓指引、"Refresh my views"（只核验自己的帖子）；品牌卡（分享、核验、退款，A7 后移到用户中心）；分享菜单；Worker 为 `/c/:id` 注入 meta，`/api/og/c/:id.png` 用 resvg 实时生成分享图。应用首屏 JS 约 165 KB gzip，钱包和 Stellar SDK 按需加载 |
-| A6–A9 | 进行中 | `/new`、`/dashboard` 暂由旧版应用提供 |
+| A6 建活动向导 | ✅ 已上线 | `/new` 三步（简报 → 预算 → 确认），右侧实时预览卡；Markdown 简报带预览和模板，#ad 规则常驻，Logo 上传；预算计算器（最多播放量、可覆盖创作者数、创作者实得）、余额校验与测试币指引；确认页列出锁定金额、费用、网络费估算（Freighter 模拟交易）、截止与可退款时间；草稿存在本地。简报按 hash 存储，链上链接指向 `/b/<hash>`（新页面）。签名步骤需真实 passkey / Freighter，自动化浏览器只验证到签名前和失败路径 |
+| A7–A9 | 进行中 | `/dashboard` 暂由旧版应用提供 |
 
 **质量门槛（每个阶段都要满足）：**
 - 功能：该阶段涉及的用户任务在线上从头到尾跑通（landing → 参加 → 到账 → 提现；landing → 建活动 → 管理 → 退款）。
