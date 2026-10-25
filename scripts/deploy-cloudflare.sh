@@ -9,8 +9,14 @@ cd "$(dirname "$0")/.."
 
 pnpm --filter web build
 cd verifier
-# Schema first, so the new code never runs against old tables.
-pnpm exec wrangler d1 migrations apply clippay --remote
+# Schema first, so the new code never runs against old tables. The D1 API
+# sometimes fails a request transiently (code 7403): retry before giving up.
+for attempt in 1 2 3; do
+  pnpm exec wrangler d1 migrations apply clippay --remote && break
+  [ "$attempt" = 3 ] && exit 1
+  echo "D1 migrations failed (attempt $attempt), retrying…" >&2
+  sleep 5
+done
 pnpm exec wrangler deploy
 
 # The deployed verifier signs with its own key (VERIFIER_KEY, default
