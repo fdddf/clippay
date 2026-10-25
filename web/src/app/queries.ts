@@ -18,6 +18,16 @@ export const keys = {
 export const useStats = () => useQuery({ queryKey: keys.stats, queryFn: api.stats });
 export const useCampaigns = () => useQuery({ queryKey: keys.campaigns, queryFn: api.campaigns });
 export const useCampaign = (id: number) => useQuery({ queryKey: keys.campaign(id), queryFn: () => api.campaign(id) });
+/**
+ * Start the data request for the page being opened, so it runs alongside the
+ * download of the page's code instead of after it (the pages are lazy).
+ */
+export function prefetchFor(path: string) {
+  const c = path.match(/^\/c\/(\d+)\/?$/);
+  if (c) void queryClient.prefetchQuery({ queryKey: keys.campaign(Number(c[1])), queryFn: () => api.campaign(Number(c[1])) });
+  else if (/^\/campaigns\/?$/.test(path)) void queryClient.prefetchQuery({ queryKey: keys.campaigns, queryFn: api.campaigns });
+}
+
 export const useAccount = (address: string | null | undefined) =>
   useQuery({ queryKey: keys.account(address ?? ""), queryFn: () => api.account(address!), enabled: !!address });
 

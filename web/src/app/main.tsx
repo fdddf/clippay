@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { Layout } from "./Layout";
 import { DashboardLayout } from "./dashboard/Layout";
-import { queryClient } from "./queries";
+import { prefetchFor, queryClient } from "./queries";
 import { WalletProvider } from "./wallet";
 import { NotFound } from "./pages/NotFound";
 
@@ -58,6 +58,8 @@ function App() {
     </Routes>
   );
 }
+
+prefetchFor(location.pathname);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
