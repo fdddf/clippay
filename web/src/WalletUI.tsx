@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { describeError, fromUnits } from "@clippay/pool-client";
-import { getTransaction, loadAnchor, startWithdraw, type Anchor, type Sep24Transaction } from "@clippay/anchor";
+import {
+  checkWithdrawAmount,
+  getTransaction,
+  loadAnchor,
+  startWithdraw,
+  withdrawLimits,
+  type Anchor,
+  type Sep24Transaction,
+  type WithdrawLimits,
+} from "@clippay/anchor";
 import { anchorAssetCode, config, explorer, short, tokenBalance } from "./stellar.ts";
 import {
   anchorLogin,
@@ -106,6 +115,9 @@ export function WalletPanel({
   const [mode, setMode] = useState<"bank" | "address">("bank");
   const sym = config.tokenSymbol;
   const dialog = useDialog<HTMLDivElement>(onClose);
+  // Passkey wallets withdraw here; the dev-only read-only preview shows the same
+  // forms (signing still fails) so they can be checked without an authenticator.
+  const canWithdraw = wallet.kind === "passkey" || wallet.kind === "watch";
 
   const refresh = () => tokenBalance(wallet.address).then(setBalance).catch(() => setBalance(null));
   useEffect(() => {
@@ -146,7 +158,7 @@ export function WalletPanel({
           {balance === null ? "—" : fromUnits(balance)} {sym}
         </div>
 
-        {wallet.kind === "passkey" && (
+        {canWithdraw && (
           <div className="segmented" role="tablist" aria-label="Withdraw to">
             <button role="tab" aria-selected={mode === "bank"} onClick={() => setMode("bank")}>
               To bank
@@ -157,11 +169,11 @@ export function WalletPanel({
           </div>
         )}
 
-        {wallet.kind === "passkey" && mode === "bank" && (
-          <CashOut wallet={wallet} notify={notify} onPaid={refresh} />
+        {canWithdraw && mode === "bank" && (
+          <CashOut wallet={wallet} balance={balance} notify={notify} onPaid={refresh} />
         )}
 
-        {wallet.kind === "passkey" && mode === "address" && (
+        {canWithdraw && mode === "address" && (
           <form className="form" onSubmit={onWithdraw}>
             <div className="muted small">Send to any Stellar address, e.g. an exchange.</div>
             <input required value={to} onChange={(e) => setTo(e.target.value)} aria-label="Destination address"
@@ -198,9 +210,23 @@ const fiat = (asset?: string) => asset?.replace(/^iso4217:/, "") ?? "";
  * SEP-24 cash-out: authenticate the passkey wallet with the anchor (SEP-45),
  * collect bank details in the anchor's own window, then pay the anchor.
  */
-function CashOut({ wallet, notify, onPaid }: { wallet: Wallet; notify: (n: Notice) => void; onPaid: () => void }) {
+function CashOut({
+  wallet,
+  balance,
+  notify,
+  onPaid,
+}: {
+  wallet: Wallet;
+  balance: bigint | null;
+  notify: (n: Notice) => void;
+  onPaid: () => void;
+}) {
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<Step>({ name: "idle" });
+  const [error, setError] = useState<string | null>(null);
+  // SEP-1 + SEP-24 /info, fetched once so limits show before the user types.
+  const [anchorInfo, setAnchorInfo] = useState<{ anchor: Anchor; limits: WithdrawLimits } | null>(null);
+  const [infoError, setInfoError] = useState<string | null>(null);
   const session = useRef<{ anchor: Anchor; jwt: string; id: string } | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const sym = config.tokenSymbol;
@@ -210,6 +236,17 @@ function CashOut({ wallet, notify, onPaid }: { wallet: Wallet; notify: (n: Notic
     timer.current = null;
   };
   useEffect(() => stopPolling, []);
+  useEffect(() => {
+    let live = true;
+    loadAnchor(config.anchorDomain)
+      .then(async (anchor) => ({ anchor, limits: await withdrawLimits(anchor, anchorAssetCode) }))
+      .then((info) => live && setAnchorInfo(info))
+      .catch((e) => live && setInfoError(describeError(e)));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const balanceUnits = balance === null ? null : Number(balance) / 1e7;
 
   const fail = (e: unknown) => {
     stopPolling();
@@ -240,11 +277,16 @@ function CashOut({ wallet, notify, onPaid }: { wallet: Wallet; notify: (n: Notic
 
   async function onStart(e: FormEvent) {
     e.preventDefault();
+    if (!anchorInfo) return;
+    // Check the anchor's limits before any popup or passkey prompt.
+    const problem = checkWithdrawAmount(anchorInfo.limits, Number(amount), balanceUnits, sym);
+    setError(problem);
+    if (problem) return;
     // Open the window inside the click so popup blockers allow it.
     const popup = window.open("about:blank", "clippay-anchor", "width=480,height=760");
     setStep({ name: "auth" });
     try {
-      const anchor = await loadAnchor(config.anchorDomain);
+      const anchor = anchorInfo.anchor;
       const jwt = await anchorLogin(wallet, anchor);
       const started = await startWithdraw(anchor, jwt, {
         assetCode: anchorAssetCode,
@@ -283,20 +325,48 @@ function CashOut({ wallet, notify, onPaid }: { wallet: Wallet; notify: (n: Notic
   }
 
   switch (step.name) {
-    case "idle":
+    case "idle": {
+      const limits = anchorInfo?.limits;
+      const range =
+        limits?.min !== undefined && limits.max !== undefined
+          ? `${limits.min}–${limits.max} ${sym} per withdrawal`
+          : limits?.min !== undefined
+            ? `from ${limits.min} ${sym}`
+            : limits?.max !== undefined
+              ? `up to ${limits.max} ${sym}`
+              : null;
       return (
-        <form className="form" onSubmit={onStart}>
+        <form className="form" onSubmit={onStart} noValidate>
           <div className="muted small">
             Withdraw through <b>{config.anchorDomain}</b>, a Stellar anchor that pays out to your bank
             account. You'll enter your bank details on the anchor's page.
           </div>
-          <div className="row">
-            <input required type="number" min="0.0000001" step="any" value={amount} aria-label={`Amount (${sym})`}
-              onChange={(e) => setAmount(e.target.value)} placeholder={`Amount (${sym})`} />
-            <button className="btn">Cash out</button>
-          </div>
+          {infoError ? (
+            <p className="error small" role="alert">Couldn't reach the anchor: {infoError}</p>
+          ) : !anchorInfo ? (
+            <p className="muted small">Checking the anchor's limits…</p>
+          ) : !limits?.enabled ? (
+            <p className="error small" role="alert">This anchor doesn't pay out {sym} right now.</p>
+          ) : (
+            <>
+              {range && <div className="muted small" id="cashout-limits">Anchor limits: {range}</div>}
+              <div className="row">
+                <input required type="number" step="any" value={amount} aria-label={`Amount (${sym})`}
+                  aria-describedby={range ? "cashout-limits" : undefined} aria-invalid={!!error}
+                  min={limits.min ?? 0.0000001} max={limits.max}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder={range ? `${limits.min ?? 0}–${limits.max ?? ""} ${sym}` : `Amount (${sym})`} />
+                <button className="btn">Cash out</button>
+              </div>
+              {error && <p className="error small" role="alert">{error}</p>}
+            </>
+          )}
         </form>
       );
+    }
     case "auth":
       return <p className="progress">Confirm with your passkey to sign in to the anchor…</p>;
     case "form":

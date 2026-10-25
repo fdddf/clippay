@@ -294,7 +294,7 @@ clippay/
 
 - [x] P0-1 git 初始化 + 公开仓库：https://github.com/fdddf/clippay（CI 绿）
 - [x] P0-2 / S1 集中配置 `deployments/testnet.json`（web、verifier、脚本都从这里读；`.env` 只放密钥）
-- [x] P0-5a/c/d/e 快速修复（P1 时顺带完成）；P0-5b 提现前读取 anchor 限额 **未做**
+- [x] P0-5a–e 快速修复（a/c/d/e 在 P1 时顺带完成；b：提现前读取 SEP-24 `/info` 限额并校验金额和余额）
 - [x] P0-4 演示数据 seed：`pnpm seed`，3 个虚构品牌活动 + 7 个提交
 - [x] P0-3 公网部署：https://clippay.umesok.workers.dev（Worker + Durable Object，每分钟自动结算）
 - [x] P0-7 README 定稿（在线地址、合约 ID、交易证据、演示数据说明、本周末进度）

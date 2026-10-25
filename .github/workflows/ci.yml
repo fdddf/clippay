@@ -49,6 +49,7 @@ jobs:
       # Contract error codes ↔ web messages ↔ generated bindings stay in sync.
       - run: pnpm --filter @clippay/pool-client test
       - run: pnpm --filter verifier test
+      - run: pnpm --filter @clippay/anchor test
       - run: pnpm --filter web build
         env:
           VITE_RPC_URL: https://soroban-testnet.stellar.org

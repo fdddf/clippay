@@ -152,6 +152,43 @@ async function sep24<T>(anchor: Anchor, jwt: string, path: string, init?: Reques
   return body;
 }
 
+export interface WithdrawLimits {
+  enabled: boolean;
+  /** Per-withdrawal bounds in asset units; absent when the anchor sets none. */
+  min?: number;
+  max?: number;
+}
+
+/** SEP-24 `/info` (no auth needed): whether `assetCode` can be withdrawn, and its limits. */
+export async function withdrawLimits(anchor: Anchor, assetCode: string): Promise<WithdrawLimits> {
+  const res = await fetch(`${anchor.transferServer}/info`);
+  if (!res.ok) throw new Error(`SEP-24 /info: HTTP ${res.status}`);
+  const body = (await res.json()) as {
+    withdraw?: Record<string, { enabled?: boolean; min_amount?: number; max_amount?: number }>;
+  };
+  const asset = body.withdraw?.[assetCode];
+  if (!asset) return { enabled: false };
+  return { enabled: !!asset.enabled, min: asset.min_amount, max: asset.max_amount };
+}
+
+/**
+ * Why `amount` can't be withdrawn, or null if it can. `balance` is the
+ * wallet's spendable balance in asset units.
+ */
+export function checkWithdrawAmount(
+  limits: WithdrawLimits,
+  amount: number,
+  balance: number | null,
+  symbol: string,
+): string | null {
+  if (!limits.enabled) return `This anchor doesn't pay out ${symbol} right now`;
+  if (!Number.isFinite(amount) || amount <= 0) return "Enter an amount to cash out";
+  if (limits.min !== undefined && amount < limits.min) return `The anchor's minimum is ${limits.min} ${symbol}`;
+  if (limits.max !== undefined && amount > limits.max) return `The anchor's maximum is ${limits.max} ${symbol} per withdrawal`;
+  if (balance !== null && amount > balance) return `Your wallet holds ${balance} ${symbol}`;
+  return null;
+}
+
 /** SEP-24: start an interactive withdrawal; open `url` for the user's bank details. */
 export function startWithdraw(
   anchor: Anchor,
