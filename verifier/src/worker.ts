@@ -83,8 +83,13 @@ const stub = (env: Env) => env.VERIFIER.get(env.VERIFIER.idFromName("main"));
 /** Titles and share cards for app pages, so links unfurl with the right preview. */
 async function withHead(page: Response, url: URL, env: Env): Promise<Response> {
   let head: { title: string; description: string; image: string } | null = null;
+  let status = page.status;
   const c = url.pathname.match(/^\/c\/(\d+)\/?$/);
-  if (c) head = await campaignHead(env, Number(c[1])).catch(() => null);
+  if (c) {
+    const found = await campaignHead(env, Number(c[1])).catch(() => undefined);
+    if (found === null) status = 404; // the app shows its not-found page
+    head = found ?? null;
+  }
   else if (url.pathname.replace(/\/$/, "") === "/campaigns") {
     head = {
       title: "Campaigns — ClipPay",
@@ -105,7 +110,7 @@ async function withHead(page: Response, url: URL, env: Env): Promise<Response> {
     .on('meta[property="og:description"]', set(head?.description))
     .on('meta[property="og:url"]', set(url.href))
     .on('meta[property="og:image"]', set(image))
-    .transform(page);
+    .transform(status === page.status ? page : new Response(page.body, { status, headers: page.headers }));
 }
 
 export default {

@@ -290,7 +290,10 @@ export async function campaignHead(env: Pick<ApiEnv, "DB" | "NETWORK">, id: numb
   const fmt = (u: bigint) => (Number((u * 100n) / scale) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
   const terms = `Earn ${fmt(rate)} ${sym} per 1,000 views, up to ${fmt(BigInt(c.capPerCreator))} ${sym}.`;
   return {
-    title: `${c.title} — ${brandNameOf(c)} on ClipPay`,
+    // Most titles already lead with the brand ("Kitebase — …").
+    title: c.title.toLowerCase().startsWith(brandNameOf(c).toLowerCase())
+      ? `${c.title} · ClipPay`
+      : `${c.title} — ${brandNameOf(c)} on ClipPay`,
     description: c.brief?.summary ? `${c.brief.summary} ${terms}` : `${terms} Paid out on Stellar as views are verified.`,
     image: `/api/og/c/${c.id}.png`,
   };
