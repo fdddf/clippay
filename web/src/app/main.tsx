@@ -8,10 +8,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { Layout } from "./Layout";
 import { queryClient } from "./queries";
 import { WalletProvider } from "./wallet";
+import CampaignPage from "./pages/Campaign";
 import Campaigns from "./pages/Campaigns";
 import { NotFound } from "./pages/NotFound";
 
-const CampaignPage = lazy(() => import("./pages/Campaign"));
 const UiPreview = import.meta.env.DEV ? lazy(() => import("./pages/UiPreview.tsx")) : null;
 
 function App() {
@@ -20,14 +20,7 @@ function App() {
       {UiPreview && <Route path="/_ui" element={<Suspense><UiPreview /></Suspense>} />}
       <Route element={<Layout />}>
         <Route path="/campaigns" element={<Campaigns />} />
-        <Route
-          path="/c/:id"
-          element={
-            <Suspense>
-              <CampaignPage />
-            </Suspense>
-          }
-        />
+        <Route path="/c/:id" element={<CampaignPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

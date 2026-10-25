@@ -15,7 +15,8 @@ export function Layout() {
         Skip to content
       </a>
       <AppHeader />
-      <main id="main" className="flex-1">
+      {/* At least a screen tall, so the footer never jumps up into view while a page loads. */}
+      <main id="main" className="min-h-[calc(100svh-4rem)] flex-1">
         <Outlet />
       </main>
       <SiteFooter health={stats.isSuccess ? "ok" : stats.isError ? "down" : undefined} />
