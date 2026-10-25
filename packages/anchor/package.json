@@ -1,0 +1,16 @@
+{
+  "name": "@clippay/anchor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "~16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
