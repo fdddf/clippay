@@ -1,5 +1,6 @@
 // The right-hand card for creators who haven't joined: what they'll earn,
 // three steps, and the link form. Signs in first if needed.
+import { InfoHint } from "@/components/InfoHint";
 import { useState, type FormEvent } from "react";
 import { Check, Copy, ExternalLink, Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -66,7 +67,7 @@ export function JoinCard({ c }: { c: CampaignDetail }) {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const w = wallet ?? (await connect());
+    const w = wallet ?? (await connect("creator"));
     if (!w) return;
     const ok = await tx.run(async (step) => {
       const m = await loadWallet();
@@ -112,8 +113,8 @@ export function JoinCard({ c }: { c: CampaignDetail }) {
               <p>You're signed in.</p>
             ) : (
               <p>
-                <span className="font-medium">Sign in</span> with Face ID or a fingerprint — it takes a few seconds and
-                costs nothing.
+                <span className="font-medium">Sign in</span> with a passkey <InfoHint term="passkey" label="a passkey" /> —
+                Face ID or a fingerprint, a few seconds, no cost.
               </p>
             )}
           </Step>

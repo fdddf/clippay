@@ -135,7 +135,7 @@ export default function NewCampaign() {
   };
 
   async function launch() {
-    const w = wallet ?? (await connect());
+    const w = wallet ?? (await connect("brand"));
     if (!w || !budget.amounts) return;
     const a = budget.amounts;
     const brand = w.address;

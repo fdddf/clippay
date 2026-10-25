@@ -1,4 +1,5 @@
 // Step 3: everything that's about to be locked, in plain words.
+import { InfoHint } from "@/components/InfoHint";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Amount } from "@/components/Amount";
@@ -86,6 +87,7 @@ export function ReviewStep({ d, a, wallet }: { d: Draft; a: Amounts; wallet: Wal
           </Row>
           <Row label="ClipPay fee">{config.feeBps / 100}% of each payout — nothing on the budget you get back</Row>
           <Row label="Network fee">
+            <InfoHint term="networkFee" label="the network fee" className="mr-1.5" />
             {wallet?.kind === "passkey" ? (
               "Covered by ClipPay"
             ) : wallet?.kind === "freighter" ? (

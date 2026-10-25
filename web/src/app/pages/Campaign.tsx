@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, BadgeCheck, CircleCheck, ExternalLink, Flag, Loc
 import { brandLogo, brandName, budgetLeftPct } from "@/components/CampaignCard";
 import { ErrorState } from "@/components/EmptyState";
 import { Identicon } from "@/components/Identicon";
+import { InfoHint } from "@/components/InfoHint";
 import { Amount } from "@/components/Amount";
 import { StatusPill } from "@/components/StatusPill";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -125,7 +126,11 @@ function Stats({ c }: { c: CampaignDetail }) {
     { label: "Paid to creators", value: <Amount units={BigInt(c.paid)} decimals={c.decimals} />, hint: `${c.creators} creators` },
     { label: "Verified views", value: compactNumber(views), hint: "across all posts" },
     {
-      label: "Cost per 1k views",
+      label: (
+        <>
+          Cost per 1k views <InfoHint term="costPer1k" label="cost per 1k views" />
+        </>
+      ),
       value: per1k === null ? "—" : <Amount units={per1k} decimals={c.decimals} />,
       hint: per1k === null ? "no views yet" : "budget spent ÷ views",
     },
@@ -136,8 +141,8 @@ function Stats({ c }: { c: CampaignDetail }) {
         Campaign numbers
       </h2>
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border md:grid-cols-4">
-        {items.map((it) => (
-          <div key={it.label} className="bg-card p-4">
+        {items.map((it, i) => (
+          <div key={i} className="bg-card p-4">
             <dt className="text-xs text-muted-foreground">{it.label}</dt>
             <dd className="mt-1 text-lg font-semibold tracking-tight tabular">{it.value}</dd>
             <dd className="text-xs text-muted-foreground">{it.hint}</dd>

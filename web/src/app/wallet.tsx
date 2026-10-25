@@ -4,9 +4,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { SESSION_KEY } from "@/lib/session";
 import type { Wallet } from "@/lib/wallet";
-import { SignInDialog } from "./SignInDialog";
+import { SignInDialog, type Role } from "./SignInDialog";
+import { WelcomeDialog, shouldWelcome } from "./WelcomeDialog";
 
-export type { Wallet };
+export type { Wallet, Role };
 
 export const loadWallet = () => import("@/lib/wallet");
 
@@ -23,8 +24,11 @@ interface WalletContext {
   wallet: Wallet | null;
   /** True while reconnecting to the wallet used last time. */
   restoring: boolean;
-  /** Opens the sign-in dialog; resolves with the wallet, or null if dismissed. */
-  connect(): Promise<Wallet | null>;
+  /**
+   * Opens the sign-in dialog (on the creator or brand path, if known);
+   * resolves with the wallet, or null if dismissed.
+   */
+  connect(role?: Role): Promise<Wallet | null>;
   disconnect(): Promise<void>;
 }
 
@@ -34,6 +38,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [restoring, setRestoring] = useState(hadWallet);
   const [open, setOpen] = useState(false);
+  const [role, setRole] = useState<Role | null>(null);
+  const [welcome, setWelcome] = useState<string | null>(null);
   const pending = useRef<((w: Wallet | null) => void) | null>(null);
 
   useEffect(() => {
@@ -47,16 +53,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const connect = useCallback(() => {
+  const connect = useCallback((r?: Role) => {
     void loadWallet(); // start fetching while the dialog opens
+    setRole(r ?? null);
     setOpen(true);
     return new Promise<Wallet | null>((resolve) => {
       pending.current = resolve;
     });
   }, []);
 
-  const finish = useCallback((w: Wallet | null) => {
+  const finish = useCallback((w: Wallet | null, created?: boolean) => {
     if (w) setWallet(w);
+    if (w && created && shouldWelcome(w.address)) setWelcome(w.address);
     setOpen(false);
     pending.current?.(w);
     pending.current = null;
@@ -74,7 +82,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={value}>
       {children}
-      <SignInDialog open={open} onDone={finish} />
+      <SignInDialog open={open} initialRole={role} onDone={finish} />
+      <WelcomeDialog address={welcome} onClose={() => setWelcome(null)} />
     </Ctx.Provider>
   );
 }

@@ -1,5 +1,6 @@
 // Cash out to a bank through a SEP-24 anchor, as four steps: amount → bank
 // details (in the anchor's window) → confirm the transfer → on its way.
+import { InfoHint } from "@/components/InfoHint";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Check, ExternalLink, Loader2 } from "lucide-react";
 import type { Anchor, Sep24Transaction, WithdrawLimits } from "@clippay/anchor";
@@ -161,8 +162,8 @@ export function CashOut({
         {step.name === "amount" && (
           <form onSubmit={start} noValidate className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Withdraw through <span className="font-medium text-foreground">{config.anchorDomain}</span>, a Stellar anchor that
-              pays out to bank accounts. You'll enter your bank details on the anchor's own page; ClipPay never sees them.
+              Withdraw through <span className="font-medium text-foreground">{config.anchorDomain}</span>, a Stellar anchor{" "}
+              <InfoHint term="anchor" label="an anchor" /> that pays out to bank accounts. You'll enter your bank details on the anchor's own page; ClipPay never sees them.
             </p>
             {infoError ? (
               <p role="alert" className="text-sm text-destructive">
