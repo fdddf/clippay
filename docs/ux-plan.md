@@ -442,7 +442,7 @@
 |---|---|---|
 | A1 设计系统 | ✅ 已上线 | 组件预览在 `/_ui`（仅开发环境） |
 | A2 数据层 | ✅ 已上线 | `/api/*`，D1 事件索引、简报、媒体、钱包登录 |
-| A3 Landing page | ✅ 已上线 | `/` 构建时预渲染（`web/scripts/prerender.ts`），首屏 JS 3.1 KB gzip；实时数据由 `src/landing/client.ts` 填充；OG 图 `public/og.png`（源文件 `web/design/og.svg`） |
+| A3 Landing page | ✅ 已上线 | `/` 构建时预渲染（`web/scripts/prerender.ts`），只含 landing 用到的样式（`styles/landing.css`，9.4 KB gzip，内联进 HTML）；首屏 JS 3.1 KB gzip，实时数据由 `src/landing/client.ts` 填充；OG 图 `public/og.png`（源文件 `web/design/og.svg`）。Lighthouse（本地构建，模拟慢速 4G）：手机与桌面四项均为 100，手机 LCP 1.5s |
 | A4 外框与内容页 | ✅ 已上线 | `/how-it-works`、`/security`、`/terms`、`/privacy`；三组截图与 axe（明 / 暗、375px）均通过 |
 | A5–A9 | 进行中 | `/campaigns`、`/c/:id`、`/new`、`/dashboard` 暂由旧版应用提供 |
 

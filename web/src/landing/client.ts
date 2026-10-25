@@ -1,6 +1,6 @@
 // The landing page's only script: fills the prerendered markup with live
 // numbers, campaigns and payouts from the Worker's API. No React, no Stellar SDK.
-import "@/styles/globals.css";
+import "@/styles/landing.css";
 import type { Campaign, ChainEvent, Profile, Stats } from "@/lib/api-types";
 import { CATEGORY_LABEL, PLATFORM_LABEL } from "@/lib/brief";
 import { compactNumber, formatUnits, hash32, relativeTime, shortAddress, timeLeft } from "@/lib/format";

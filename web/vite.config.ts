@@ -49,6 +49,8 @@ export default defineConfig({
     proxy: { "/api": process.env.API_PROXY ?? "http://localhost:8790" },
   },
   build: {
+    // Every browser ClipPay supports has <link rel="modulepreload">.
+    modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
         index: fileURLToPath(new URL("./index.html", import.meta.url)),

@@ -1,0 +1,9 @@
+/* The marketing pages' stylesheet: only the classes they use, so it's small
+   enough to inline into the prerendered HTML (scripts/prerender.ts). */
+@import "tailwindcss" source(none);
+@source "../landing";
+@source "../components/Logo.tsx";
+@source "../components/StatusPill.tsx";
+@source "../components/GithubMark.tsx";
+@source "../components/ui/button.tsx";
+@import "./tokens.css";
