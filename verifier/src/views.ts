@@ -1,0 +1,109 @@
+// View-count providers. Each returns what it knows about a submission's post,
+// or throws if the post can't be found.
+import type { Submission } from "@clippay/pool-client";
+
+export interface PostStats {
+  /** Cumulative views. */
+  views: bigint;
+  likes?: bigint;
+  title?: string;
+  description?: string;
+  /** Unix seconds. */
+  publishedAt?: number;
+  /** Unix seconds; when the channel that posted it was created. */
+  channelCreatedAt?: number;
+}
+
+export interface ViewProvider {
+  name: string;
+  /** Whether stats carry the metadata (title, description…) checks need. */
+  hasMetadata: boolean;
+  stats(sub: Submission): Promise<PostStats>;
+}
+
+/** Demo provider: views grow linearly from the moment of submission. */
+export function mockProvider(viewsPerSecond: number): ViewProvider {
+  return {
+    name: "mock",
+    hasMetadata: false,
+    async stats(sub) {
+      const elapsed = BigInt(Math.floor(Date.now() / 1000)) - sub.submitted_at;
+      return { views: elapsed > 0n ? elapsed * BigInt(viewsPerSecond) : 0n };
+    },
+  };
+}
+
+interface YouTubeItem {
+  statistics?: { viewCount?: string; likeCount?: string };
+  snippet?: { title?: string; description?: string; publishedAt?: string; channelId?: string };
+}
+
+/**
+ * YouTube Data API v3. Costs 1 quota unit per video, plus 1 per channel the
+ * first time it is seen (channel ages are cached).
+ */
+export function youtubeProvider(apiKey: string): ViewProvider {
+  const channelCreated = new Map<string, number>();
+
+  async function get<T>(path: string, params: Record<string, string>): Promise<T> {
+    const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
+    for (const [k, v] of Object.entries({ ...params, key: apiKey })) url.searchParams.set(k, v);
+    const res = await fetch(url);
+    if (res.status === 403) throw new Error("YouTube API quota exceeded — will retry next pass");
+    if (!res.ok) throw new Error(`YouTube API ${res.status}`);
+    return res.json() as Promise<T>;
+  }
+
+  async function channelAge(id: string): Promise<number | undefined> {
+    if (!channelCreated.has(id)) {
+      const body = await get<{ items?: { snippet?: { publishedAt?: string } }[] }>("channels", {
+        part: "snippet",
+        id,
+      });
+      const at = body.items?.[0]?.snippet?.publishedAt;
+      if (at) channelCreated.set(id, Date.parse(at) / 1000);
+    }
+    return channelCreated.get(id);
+  }
+
+  return {
+    name: "youtube",
+    hasMetadata: true,
+    async stats(sub) {
+      const id = youtubeId(sub.url);
+      if (!id) throw new Error(`not a YouTube URL: ${sub.url}`);
+      const body = await get<{ items?: YouTubeItem[] }>("videos", {
+        part: "statistics,snippet",
+        id,
+      });
+      const item = body.items?.[0];
+      if (!item) throw new Error(`video ${id} not found`);
+      const s = item.snippet ?? {};
+      return {
+        views: BigInt(item.statistics?.viewCount ?? "0"),
+        likes: item.statistics?.likeCount ? BigInt(item.statistics.likeCount) : undefined,
+        title: s.title,
+        description: s.description,
+        publishedAt: s.publishedAt ? Date.parse(s.publishedAt) / 1000 : undefined,
+        channelCreatedAt: s.channelId ? await channelAge(s.channelId) : undefined,
+      };
+    },
+  };
+}
+
+export function ownershipTag(creator: string): string {
+  return `clippay:${creator.slice(0, 6)}`;
+}
+
+export function youtubeId(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    if (u.hostname === "youtu.be") return u.pathname.slice(1) || null;
+    if (u.hostname.endsWith("youtube.com")) {
+      if (u.pathname === "/watch") return u.searchParams.get("v");
+      const m = u.pathname.match(/^\/(shorts|embed|live)\/([\w-]+)/);
+      if (m) return m[2];
+    }
+  } catch {}
+  return null;
+}

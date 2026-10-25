@@ -1,0 +1,26 @@
+{
+  "name": "verifier",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "start": "tsx --env-file=.env src/index.ts",
+    "once": "tsx --env-file=.env src/index.ts --once",
+    "typecheck": "tsc --noEmit",
+    "e2e:passkey": "tsx --env-file=.env scripts/e2e-passkey.ts",
+    "e2e:anchor": "tsx --env-file=.env scripts/e2e-anchor.ts",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@clippay/pool-client": "workspace:*",
+    "@stellar/stellar-sdk": "~16.3.1",
+    "@clippay/anchor": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "smart-account-kit": "0.8.0"
+  }
+}
