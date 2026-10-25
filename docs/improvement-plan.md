@@ -292,12 +292,12 @@ clippay/
 
 确认本计划后，按这个顺序推进。每完成一项就在这里勾选：
 
-- [ ] P0-1 git 初始化 + 公开仓库（需要你确认仓库名和 GitHub 账号）
-- [ ] P0-2 / S1 集中配置 `deployments/testnet.json`
-- [ ] P0-5a–e 快速修复
-- [ ] P0-4 演示数据 seed
-- [ ] P0-3 公网部署（Cloudflare）
-- [ ] P0-7 README / ARCHITECTURE 定稿
+- [x] P0-1 git 初始化 + 公开仓库：https://github.com/fdddf/clippay（CI 绿）
+- [x] P0-2 / S1 集中配置 `deployments/testnet.json`（web、verifier、脚本都从这里读；`.env` 只放密钥）
+- [x] P0-5a/c/d/e 快速修复（P1 时顺带完成）；P0-5b 提现前读取 anchor 限额 **未做**
+- [x] P0-4 演示数据 seed：`pnpm seed`，3 个虚构品牌活动 + 7 个提交
+- [x] P0-3 公网部署：https://clippay.umesok.workers.dev（Worker + Durable Object，每分钟自动结算）
+- [x] P0-7 README 定稿（在线地址、合约 ID、交易证据、演示数据说明、本周末进度）
 - [ ] P0-6 视频脚本 + deck 大纲（录制需要你本人参与）
 
 **已决策（2026-10-25）：**
