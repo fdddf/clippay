@@ -46,6 +46,11 @@ export interface Brief {
   demo?: boolean;
 }
 
+/** The tag a creator puts in their post's description to prove it's theirs. */
+export function ownershipTag(creator: string): string {
+  return `clippay:${creator.slice(0, 6)}`;
+}
+
 export const LIMITS = { name: 60, summary: 200, body: 8000, rule: 120, rules: 10, url: 300 };
 const HASH = /^[0-9a-f]{64}$/;
 

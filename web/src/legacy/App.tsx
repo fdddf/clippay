@@ -29,6 +29,8 @@ function useRoute() {
     return location.pathname;
   });
   const go = useCallback((p: string) => {
+    // Routes served by another entry (the new app, landing pages) need a page load.
+    if (entryFor(p) !== "legacy") return location.assign(p);
     if (p !== location.pathname) history.pushState(null, "", p);
     setPath(p);
     scrollTo(0, 0);

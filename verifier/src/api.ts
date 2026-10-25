@@ -13,6 +13,7 @@
 //   GET  /api/auth/challenge?address=  · POST /api/auth/verify   wallet sign-in
 //   GET  /api/me · PUT /api/profile                     the signed-in account's profile
 //   PUT  /api/campaigns/:id/brief                       brand attaches a brief (signed in)
+//   GET  /api/og/c/:id.png                              a campaign's share image
 import {
   allSubmissions,
   poolClient,
@@ -42,6 +43,7 @@ import {
   validateBrief,
   type Brief,
 } from "../../web/src/lib/brief.ts";
+import { campaignOgPng } from "./og.ts";
 import { createSessions } from "./session.ts";
 import { rateLimiter } from "./limits.ts";
 
@@ -260,6 +262,40 @@ async function postChecks(env: ApiEnv, id: number): Promise<Record<string, PostC
 
 // ----------------------------------------------------------------- routes
 
+// ------------------------------------------------------------- sharing
+
+function brandNameOf(c: Campaign): string {
+  return c.brandProfile?.name ?? c.brief?.brand.name ?? `${c.brand.slice(0, 4)}…${c.brand.slice(-4)}`;
+}
+
+async function brandLogo(db: D1Database, c: Campaign) {
+  const hash = c.brandProfile?.avatar?.split("/").pop() ?? c.brief?.brand.logo ?? null;
+  if (!hash) return null;
+  const row = await db
+    .prepare("SELECT mime, body FROM media WHERE hash = ?")
+    .bind(hash)
+    .first<{ mime: string; body: number[] | ArrayBuffer }>();
+  return row ? { hash, mime: row.mime, body: new Uint8Array(row.body) } : null;
+}
+
+/** Title, description and share image for a campaign page, or null if it doesn't exist. */
+export async function campaignHead(env: Pick<ApiEnv, "DB" | "NETWORK">, id: number) {
+  const network = env.NETWORK ?? "testnet";
+  const sym = deployment(network).token.symbol;
+  const { campaigns } = await campaignsView(env as ApiEnv, network);
+  const c = campaigns.find((x) => x.id === id);
+  if (!c) return null;
+  const rate = BigInt(c.ratePer1k);
+  const scale = 10n ** BigInt(c.decimals);
+  const fmt = (u: bigint) => (Number((u * 100n) / scale) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  const terms = `Earn ${fmt(rate)} ${sym} per 1,000 views, up to ${fmt(BigInt(c.capPerCreator))} ${sym}.`;
+  return {
+    title: `${c.title} — ${brandNameOf(c)} on ClipPay`,
+    description: c.brief?.summary ? `${c.brief.summary} ${terms}` : `${terms} Paid out on Stellar as views are verified.`,
+    image: `/api/og/c/${c.id}.png`,
+  };
+}
+
 export async function handleApi(req: Request, env: ApiEnv, path: string): Promise<Response | null> {
   const network = env.NETWORK ?? "testnet";
   const d = deployment(network);
@@ -295,6 +331,22 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
         updatedAt: Math.floor(Date.now() / 1000),
       };
       return json(stats, 200, { "Cache-Control": "public, max-age=10" });
+    }
+
+    const og = m(/^\/api\/og\/c\/(\d+)\.png$/);
+    if (req.method === "GET" && og) {
+      const { campaigns } = await campaignsView(env, network);
+      const c = campaigns.find((x) => x.id === Number(og[1]));
+      if (!c) return new Response("Not found", { status: 404 });
+      const png = await campaignOgPng(c, {
+        brandName: brandNameOf(c),
+        symbol: d.token.symbol,
+        host: new URL(req.url).host,
+        logo: await brandLogo(env.DB, c),
+      });
+      return new Response(png as Uint8Array<ArrayBuffer>, {
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=600" },
+      });
     }
 
     if (req.method === "GET" && path === "/api/campaigns") {

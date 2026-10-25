@@ -6,10 +6,13 @@ export function EmptyState({
   title,
   description,
   action,
+  heading: Heading = "h3",
   className,
 }: {
   icon?: ReactNode;
   title: string;
+  /** The title's element; "h1" when the empty state is the whole page. */
+  heading?: "h1" | "h2" | "h3";
   description?: ReactNode;
   action?: ReactNode;
   className?: string;
@@ -22,7 +25,7 @@ export function EmptyState({
         </div>
       )}
       <div className="space-y-1">
-        <h3 className="font-semibold">{title}</h3>
+        <Heading className="font-semibold">{title}</Heading>
         {description && <p className="mx-auto max-w-sm text-sm text-muted-foreground">{description}</p>}
       </div>
       {action}

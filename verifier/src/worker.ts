@@ -7,9 +7,9 @@
 import { DurableObject } from "cloudflare:workers";
 import { describeError } from "@clippay/pool-client";
 import { createVerifier, envReader, type Verifier } from "./core.ts";
-import { htmlFor } from "../../web/src/routing.ts";
+import { ENTRY_HTML, htmlFor } from "../../web/src/routing.ts";
 import { deployment } from "@clippay/deployments";
-import { handleApi } from "./api.ts";
+import { campaignHead, handleApi } from "./api.ts";
 import { indexEvents } from "./indexer.ts";
 
 interface Env {
@@ -80,6 +80,34 @@ const PASS_MS = 60_000;
 
 const stub = (env: Env) => env.VERIFIER.get(env.VERIFIER.idFromName("main"));
 
+/** Titles and share cards for app pages, so links unfurl with the right preview. */
+async function withHead(page: Response, url: URL, env: Env): Promise<Response> {
+  let head: { title: string; description: string; image: string } | null = null;
+  const c = url.pathname.match(/^\/c\/(\d+)\/?$/);
+  if (c) head = await campaignHead(env, Number(c[1])).catch(() => null);
+  else if (url.pathname.replace(/\/$/, "") === "/campaigns") {
+    head = {
+      title: "Campaigns — ClipPay",
+      description: "Paid creator campaigns on ClipPay: pick one, post a clip, and get paid per verified view.",
+      image: "/og.png",
+    };
+  }
+  const image = new URL(head?.image ?? "/og.png", url).href;
+  const set = (content: string | undefined) => ({
+    element(el: Element) {
+      if (content !== undefined) el.setAttribute("content", content);
+    },
+  });
+  return new HTMLRewriter()
+    .on("title", { element: (el) => void (head && el.setInnerContent(head.title)) })
+    .on('meta[name="description"]', set(head?.description))
+    .on('meta[property="og:title"]', set(head?.title))
+    .on('meta[property="og:description"]', set(head?.description))
+    .on('meta[property="og:url"]', set(url.href))
+    .on('meta[property="og:image"]', set(image))
+    .transform(page);
+}
+
 export default {
   async fetch(req, env): Promise<Response> {
     const url = new URL(req.url);
@@ -102,10 +130,11 @@ export default {
     // Pages: each path belongs to one of the web app's HTML entries (web/src/routing.ts).
     const file = htmlFor(url.pathname);
     const res = await env.ASSETS.fetch(new Request(new URL(file, url), req));
-    return new Response(res.body, {
+    const page = new Response(res.body, {
       status: res.status,
       headers: { ...Object.fromEntries(res.headers), "Cache-Control": "no-cache" },
     });
+    return file === ENTRY_HTML.app ? withHead(page, url, env) : page;
   },
   async scheduled(_controller, env, ctx) {
     ctx.waitUntil(stub(env).ensureScheduled().catch((e) => console.error(describeError(e))));

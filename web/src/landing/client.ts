@@ -210,6 +210,9 @@ async function refresh() {
   });
 }
 
+// Links shared when the app used hash routes (`/#/c/3`) land here.
+if (location.hash.startsWith("#/")) location.replace(location.hash.slice(1));
+
 authCta();
 if ($("[data-stat]") || $("[data-list]") || $("[data-health]")) {
   void refresh();

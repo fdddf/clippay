@@ -121,7 +121,8 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
   );
 }
 
-export function SiteFooter() {
+/** `health` is set by the app; on landing pages client.ts fills the indicator in. */
+export function SiteFooter({ health }: { health?: "ok" | "down" } = {}) {
   return (
     <footer className="border-t bg-muted/40">
       <Container className="grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1.4fr]">
@@ -149,9 +150,16 @@ export function SiteFooter() {
         <FooterColumn title="Network">
           <li className="flex items-center gap-2 text-muted-foreground">
             <span data-health className="relative flex size-2">
-              <span className="size-2 rounded-full bg-muted-foreground/40" />
+              <span
+                className={cn(
+                  "size-2 rounded-full",
+                  health === "ok" ? "bg-ok" : health === "down" ? "bg-warn" : "bg-muted-foreground/40",
+                )}
+              />
             </span>
-            <span data-health-label>Stellar testnet</span>
+            <span data-health-label>
+              {health === "ok" ? "All systems normal" : health === "down" ? "Live data unavailable" : "Stellar testnet"}
+            </span>
           </li>
           <FooterLink href={explorer.account(config.contractId)}>
             <span className="font-mono text-xs">Contract {shortAddress(config.contractId, 5)}</span>

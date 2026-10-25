@@ -68,10 +68,10 @@ export const api = {
   attachBrief: (token: string, campaign: number, hash: string) =>
     call<{ campaign: number; brief: string }>(`/campaigns/${campaign}/brief`, { method: "PUT", ...authed(token, { hash }) }),
 
-  /** Ask the verifier to check views now (rate-limited per IP). */
-  checkViews: (campaign: number) =>
+  /** Ask the verifier to check views now, for one creator or the whole campaign (rate-limited per IP). */
+  checkViews: (campaign: number, creator?: string) =>
     call<{ id: number; results: { creator: string; paid?: string; skipped?: string; error?: string }[] }>(
-      `/settle/${campaign}`,
+      `/settle/${campaign}${creator ? `?creator=${creator}` : ""}`,
       { method: "POST" },
     ),
 };

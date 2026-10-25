@@ -125,14 +125,14 @@ export async function createVerifier(env: EnvReader) {
     if (hold.fixable.length) return `on hold: ${hold.fixable.join("; ")}`;
   }
 
-  /** Settle every submission of one campaign. */
-  async function settleCampaign(client: PoolClient, id: number): Promise<SettleResult[]> {
+  /** Settle every submission of one campaign (or only `creator`'s). */
+  async function settleCampaign(client: PoolClient, id: number, creator?: string): Promise<SettleResult[]> {
     const campaign = unwrap((await client.get_campaign({ id })).result);
     const grace = (await client.settle_grace()).result;
     const now = BigInt(Math.floor(Date.now() / 1000));
     if (campaign.refunded || now > campaign.deadline + grace) return [];
 
-    const subs = await allSubmissions(client, campaign);
+    const subs = (await allSubmissions(client, campaign)).filter((x) => !creator || x.creator === creator);
     const out: SettleResult[] = [];
     for (const sub of subs) {
       const r: SettleResult = { creator: sub.creator };
@@ -226,8 +226,8 @@ export async function createVerifier(env: EnvReader) {
     });
 
   /**
-   * Routes: GET /health · GET /status/:id · POST /settle/:id (the web app's
-   * "Verify now") · POST /review/:id/:creator (reviewer, bearer REVIEW_TOKEN) ·
+   * Routes: GET /health · GET /status/:id · POST /settle/:id[?creator=…] (the
+   * web app's "Refresh my views") · POST /review/:id/:creator (reviewer, bearer REVIEW_TOKEN) ·
    * POST /relay (smart-account-kit `relayerUrl`).
    */
   async function handle(
@@ -280,8 +280,9 @@ export async function createVerifier(env: EnvReader) {
     if (req.method === "POST" && m) {
       if (!settleLimit.take(caller.ip)) return json(429, { error: "Too many checks — try again in a minute" });
       const id = Number(m[1]);
+      const creator = new URL(req.url).searchParams.get("creator") ?? undefined;
       try {
-        const results = await serial(() => settleCampaign(pool, id));
+        const results = await serial(() => settleCampaign(pool, id, creator));
         results.forEach((r) => log(id, r));
         return json(200, { id, results });
       } catch (e) {

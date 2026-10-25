@@ -105,9 +105,7 @@ export function youtubeProvider(apiKey: string): ViewProvider {
   };
 }
 
-export function ownershipTag(creator: string): string {
-  return `clippay:${creator.slice(0, 6)}`;
-}
+export { ownershipTag } from "../../web/src/lib/brief.ts";
 
 export function youtubeId(raw: string): string | null {
   try {
