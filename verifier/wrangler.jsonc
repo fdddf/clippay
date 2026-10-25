@@ -12,8 +12,10 @@
   "assets": {
     "directory": "../web/dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    // Pages are routed by the Worker to the right HTML entry; hashed build
+    // assets are served directly.
+    "html_handling": "none",
+    "run_worker_first": ["/*", "!/assets/*"]
   },
   "durable_objects": {
     "bindings": [{ "name": "VERIFIER", "class_name": "VerifierObject" }]

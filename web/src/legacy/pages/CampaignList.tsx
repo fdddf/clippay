@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { allSubmissions, describeError, fromUnits, unwrap, type Campaign, type Submission } from "@clippay/pool-client";
-import { config, pool } from "../stellar.ts";
+import { config, pool } from "../../lib/stellar.ts";
 import type { PageProps } from "../App.tsx";
 import { costPer1k, nowSecs, status } from "../format.ts";
 

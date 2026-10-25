@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { config, explorer, pool, short } from "./stellar.ts";
-import { disconnect, restoreWallet, type Wallet } from "./wallet.ts";
+import { config, explorer, pool, short } from "../lib/stellar.ts";
+import { disconnect, restoreWallet, type Wallet } from "../lib/wallet.ts";
 import { ConnectModal, WalletPanel } from "./WalletUI.tsx";
 import { CampaignList } from "./pages/CampaignList.tsx";
 import { CreateCampaign } from "./pages/CreateCampaign.tsx";

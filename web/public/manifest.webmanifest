@@ -1,0 +1,14 @@
+{
+  "name": "ClipPay",
+  "short_name": "ClipPay",
+  "description": "Pay creators per verified view. Budgets locked on Stellar, payouts in seconds.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fcfcfd",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

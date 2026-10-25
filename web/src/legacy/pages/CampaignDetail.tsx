@@ -9,8 +9,8 @@ import {
   type Campaign,
   type Submission,
 } from "@clippay/pool-client";
-import { config, explorer, pool, short, tokenBalance } from "../stellar.ts";
-import { sendAs } from "../wallet.ts";
+import { config, explorer, pool, short, tokenBalance } from "../../lib/stellar.ts";
+import { sendAs } from "../../lib/wallet.ts";
 import type { PageProps } from "../App.tsx";
 import { costPer1k, nowSecs, status, timeLeft } from "../format.ts";
 

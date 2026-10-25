@@ -7,6 +7,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { describeError } from "@clippay/pool-client";
 import { createVerifier, envReader, type Verifier } from "./core.ts";
+import { ENTRY_HTML, LANDING_PAGES, entryFor } from "../../web/src/routing.ts";
 
 interface Env {
   VERIFIER: DurableObjectNamespace<VerifierObject>;
@@ -35,6 +36,8 @@ export class VerifierObject extends DurableObject<Env> {
   }
 
   async alarm(): Promise<void> {
+    // Local `wrangler dev` sets SETTLE=off so it never competes with production.
+    if (this.env.SETTLE === "off") return;
     try {
       await (await this.get()).settleAll();
     } catch (e) {
@@ -62,14 +65,24 @@ const stub = (env: Env) => env.VERIFIER.get(env.VERIFIER.idFromName("main"));
 
 export default {
   async fetch(req, env): Promise<Response> {
-    if (new URL(req.url).pathname.startsWith("/api/")) {
+    const url = new URL(req.url);
+    if (url.pathname.startsWith("/api/")) {
       try {
         return await stub(env).fetch(req);
       } catch (e) {
         return Response.json({ error: describeError(e) }, { status: 500 });
       }
     }
-    return env.ASSETS.fetch(req);
+    // Files (/favicon.svg, /manifest.webmanifest…) are served as they are.
+    if (url.pathname.includes(".")) return env.ASSETS.fetch(req);
+    // Pages: each path belongs to one of the web app's HTML entries (web/src/routing.ts).
+    const entry = entryFor(url.pathname);
+    const file = entry === "landing" ? `/${LANDING_PAGES[url.pathname] ?? "index"}.html` : ENTRY_HTML[entry];
+    const res = await env.ASSETS.fetch(new Request(new URL(file, url), req));
+    return new Response(res.body, {
+      status: res.status,
+      headers: { ...Object.fromEntries(res.headers), "Cache-Control": "no-cache" },
+    });
   },
   async scheduled(_controller, env, ctx) {
     ctx.waitUntil(stub(env).ensureScheduled().catch((e) => console.error(describeError(e))));

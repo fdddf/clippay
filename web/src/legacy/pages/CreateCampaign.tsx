@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { afterFee, describeError, feePercent, fromUnits, toUnits, unwrap } from "@clippay/pool-client";
-import { config, pool, tokenBalance } from "../stellar.ts";
-import { sendAs } from "../wallet.ts";
+import { config, pool, tokenBalance } from "../../lib/stellar.ts";
+import { sendAs } from "../../lib/wallet.ts";
 import type { PageProps } from "../App.tsx";
 
 export function CreateCampaign({ wallet, connect, notify, go }: PageProps) {

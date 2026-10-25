@@ -10,7 +10,7 @@ import {
   type Sep24Transaction,
   type WithdrawLimits,
 } from "@clippay/anchor";
-import { anchorAssetCode, config, explorer, short, tokenBalance } from "./stellar.ts";
+import { anchorAssetCode, config, explorer, short, tokenBalance } from "../lib/stellar.ts";
 import {
   anchorLogin,
   connectFreighter,
@@ -19,7 +19,7 @@ import {
   payAnchor,
   withdraw,
   type Wallet,
-} from "./wallet.ts";
+} from "../lib/wallet.ts";
 import type { Notice } from "./App.tsx";
 import { useDialog } from "./dialog.ts";
 
