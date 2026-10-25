@@ -1,0 +1,30 @@
+// ClipPay on Cloudflare: one Worker serves the web app (static assets) and the
+// verifier + fee relay under /api, which runs in a single Durable Object so
+// transactions from the verifier and sponsor accounts are sent one at a time.
+// Contract IDs come from deployments/<NETWORK>.json, bundled at build time.
+// Secrets: VERIFIER_SECRET, SPONSOR_SECRET, REVIEW_TOKEN (scripts/deploy-cloudflare.sh).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "clippay",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "VERIFIER", "class_name": "VerifierObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["VerifierObject"] }],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "NETWORK": "testnet",
+    "VIEW_PROVIDER": "mock",
+    "MOCK_VIEWS_PER_SECOND": "10",
+    "SPONSOR_MAX_FEE_XLM": "250"
+  },
+  "observability": { "enabled": true }
+}

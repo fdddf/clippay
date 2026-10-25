@@ -14,7 +14,7 @@ import {
 import { scriptKit } from "./soft-passkey.ts";
 
 import { env } from "./config.ts";
-const verifierUrl = `http://localhost:${process.env.PORT ?? 8787}`;
+const verifierUrl = process.env.VERIFIER_URL ?? `http://localhost:${process.env.PORT ?? 8787}`;
 const amount = process.argv[2] ?? "2";
 const step = (s: string) => console.log(`\n▸ ${s}`);
 

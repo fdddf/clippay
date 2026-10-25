@@ -75,7 +75,8 @@ CONTRACT_ID=$(stellar contract deploy \
 stellar contract invoke --id "$CONTRACT_ID" --source-account clippay-admin --network "$NETWORK" -- \
   set_rent_policy --policy "{\"margin\":$RENT_MARGIN,\"instance_ttl\":$INSTANCE_TTL}" >/dev/null
 
-# The public verifier URL is set by `pnpm deploy:cloudflare`; keep it across redeploys.
+# Where the web app finds the verifier: "/api" = same origin (the Cloudflare
+# Worker serves both). Kept across redeploys if changed by hand.
 VERIFIER_URL=$(python3 -c "import json,sys; print(json.load(open('$OUT')).get('verifierUrl',''))" 2>/dev/null || true)
 mkdir -p deployments
 python3 - "$OUT" <<PY
@@ -103,7 +104,7 @@ json.dump({
     },
     "sponsor": "$SPONSOR",
     "anchor": {"domain": "testanchor.stellar.org"},
-    "verifierUrl": "${VERIFIER_URL:-http://localhost:8787}",
+    "verifierUrl": "${VERIFIER_URL:-/api}",
 }, open(sys.argv[1], "w"), indent=2)
 open(sys.argv[1], "a").write("\n")
 PY

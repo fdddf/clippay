@@ -12,7 +12,8 @@
     "bindings": "./scripts/bindings.sh",
     "upgrade": "./scripts/upgrade.sh",
     "lint": "cargo fmt --all --check && cargo clippy -p campaign-pool --all-targets -- -D warnings",
-    "seed": "pnpm --filter verifier seed"
+    "seed": "pnpm --filter verifier seed",
+    "deploy:cloudflare": "./scripts/deploy-cloudflare.sh"
   },
   "pnpm": {
     "overrides": {

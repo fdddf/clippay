@@ -13,7 +13,8 @@ export const config = {
   contractId: env.VITE_CONTRACT_ID || d.campaignPool.contractId,
   tokenId: env.VITE_TOKEN_ID || d.token.id,
   tokenSymbol: env.VITE_TOKEN_SYMBOL || d.token.symbol,
-  verifierUrl: env.VITE_VERIFIER_URL || d.verifierUrl,
+  /** "/api" means the verifier is served from the same origin as the app (Cloudflare). */
+  verifierUrl: new URL(env.VITE_VERIFIER_URL || d.verifierUrl, location.origin).href.replace(/\/$/, ""),
   accountWasmHash: d.smartAccount.wasmHash,
   webauthnVerifier: d.smartAccount.webauthnVerifier,
   anchorDomain: env.VITE_ANCHOR_DOMAIN || d.anchor.domain,

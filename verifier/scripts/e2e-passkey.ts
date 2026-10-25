@@ -10,7 +10,7 @@ import { scriptKit } from "./soft-passkey.ts";
 
 import { env } from "./config.ts";
 
-const verifierUrl = `http://localhost:${process.env.PORT ?? 8787}`;
+const verifierUrl = process.env.VERIFIER_URL ?? `http://localhost:${process.env.PORT ?? 8787}`;
 const campaignId = Number(process.argv[2] ?? 0);
 
 const kit = scriptKit(env, verifierUrl);

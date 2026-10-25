@@ -11,18 +11,21 @@
     "e2e:passkey": "tsx --env-file=.env scripts/e2e-passkey.ts",
     "e2e:anchor": "tsx --env-file=.env scripts/e2e-anchor.ts",
     "test": "tsx --test test/*.test.ts",
-    "seed": "tsx --env-file-if-exists=.env scripts/seed.ts"
+    "seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
+    "dev:worker": "pnpm --filter web build && wrangler dev"
   },
   "dependencies": {
-    "@clippay/pool-client": "workspace:*",
-    "@stellar/stellar-sdk": "~16.3.1",
     "@clippay/anchor": "workspace:*",
-    "@clippay/deployments": "workspace:*"
+    "@clippay/deployments": "workspace:*",
+    "@clippay/pool-client": "workspace:*",
+    "@stellar/stellar-sdk": "~16.3.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4",
     "@types/node": "^24.0.0",
+    "smart-account-kit": "0.8.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
-    "smart-account-kit": "0.8.0"
+    "wrangler": "^4"
   }
 }

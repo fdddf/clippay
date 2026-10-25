@@ -13,3 +13,5 @@ docs/tracks.md
 docs/image*.png
 .wrangler/
 /.seed/
+.env.*.local
+.dev.vars*

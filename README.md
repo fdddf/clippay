@@ -2,6 +2,15 @@
 
 > HackMeridian 2026 · Genesis · Stellar Composed
 
+**Live demo: <https://clippay.umesok.workers.dev>** (Stellar testnet) ·
+[CI](https://github.com/fdddf/clippay/actions) ·
+[Threat model](docs/THREAT_MODEL.md) · [Runbook](docs/RUNBOOK.md)
+
+Try it: open a campaign → **Sign in** → **Create passkey wallet** (Face ID / Touch ID) →
+paste any YouTube link → **Verify views now**. You're paid in seconds with no wallet
+extension and no fees. Brands launch campaigns with [Freighter](https://www.freighter.app/)
+on Testnet.
+
 **Problem.** "Clipping" and UGC campaigns pay creators per 1,000 views, but the money
 moves badly in both directions. Brands prepay agencies and hope the views are real.
 Creators — mostly in LATAM, SEA and Africa — wait weeks for payouts, lose 5–10% to
@@ -39,7 +48,9 @@ extension, and no XLM for fees: every creator transaction is fee-sponsored.
 | Contract | [`contracts/campaign-pool`](contracts/campaign-pool/src/lib.rs) | Escrow, per-creator accounting, settlement, platform fee, refunds; OZ Ownable / Pausable / Upgradeable |
 | Bindings | [`packages/campaign-pool-bindings`](packages/campaign-pool-bindings/src) | Generated from the Wasm by [`scripts/bindings.sh`](scripts/bindings.sh) |
 | Shared client | [`packages/pool-client`](packages/pool-client/src/index.ts) | Amounts, fees, paging, error messages on top of the bindings |
-| Verifier | [`verifier`](verifier/src/index.ts) | Reads views, runs [payout checks](verifier/src/checks.ts), signs `settle`; HTTP trigger for demos |
+| Verifier | [`verifier`](verifier/src/core.ts) | Reads views, runs [payout checks](verifier/src/checks.ts), signs `settle`; HTTP trigger for demos |
+| Cloudflare Worker | [`verifier/src/worker.ts`](verifier/src/worker.ts) | Serves the web app and `/api` (verifier + relay) from one Durable Object that settles every minute |
+| Deployments | [`deployments/testnet.json`](deployments/testnet.json) | The one place contract IDs live; read by the web app, verifier and scripts |
 | Relay | [`verifier/src/relay.ts`](verifier/src/relay.ts) | Fee-sponsors passkey wallet transactions (`POST /relay`) |
 | Web app | [`web`](web/src) | Brand & creator UI (React, smart-account-kit, Freighter) |
 
@@ -134,19 +145,19 @@ The creator can also send to any Stellar address (**To address**).
 
 | | |
 |---|---|
-| CampaignPool v2 | [`CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2`](https://stellar.expert/explorer/testnet/contract/CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2) |
-| In-place upgrade (`upgrade` → `migrate`) | [`e8750115…`](https://stellar.expert/explorer/testnet/tx/e875011575e5ed561ca318a767cd372a5d25231f07b8e5641c72a608e6aa9d32) → Wasm `bab6099b…` |
+| CampaignPool v2 (live demo) | [`CBYEMM7I4OXD5DTWGKCKT7NDLRB357W5Q32ZUX3Z7E5MQP37UQQYWVXT`](https://stellar.expert/explorer/testnet/contract/CBYEMM7I4OXD5DTWGKCKT7NDLRB357W5Q32ZUX3Z7E5MQP37UQQYWVXT) — Wasm `0b58c98a…` built from this repo |
 | Token (native XLM SAC) | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
-| Verifier | `GA4N2DNUDW5WKDR7RM3KBFJAL3I3S53NEUNUFO626KOVIXLPZVI24L3E` |
+| Verifier (Cloudflare Worker) | `GCDOZOD74VZJB7FPKYPGEWK5V4QDIPKPRR5CWNMEHARVQCSNDVVOER6I` |
 | Owner | `GAMO4HPHHKVCX327AGSJILACAEUEJR5VPMTSRCIZONZAU3MYQSWROE6M` |
 | Treasury (5% fee) | `GCBQ55XIHJZGOJGSJHUWIL7CZL7DDYWBZXB6AFW226JV52MN4374MLQ7` |
-| Example settlement (with fee) | [`4bb1ddae…`](https://stellar.expert/explorer/testnet/tx/4bb1ddaed9456b8384a3fceed42d724b9d9234a7924fba23e88bf41ad389d7ed) |
+| Settlement by the deployed verifier | [`77c2cf1b…`](https://stellar.expert/explorer/testnet/tx/77c2cf1b0f74634b485715aaf1e6df350f0097bd6afecefd72a96e9dbefe3e20) |
+| Passkey wallet deploy via the public relay | [`58bb1d87…`](https://stellar.expert/explorer/testnet/tx/58bb1d870f085e4430e71e2a9b0f26042c9fb205e243a7bc0cc4e3d6838a0164) |
+| Passkey-signed `submit` via the public relay | [`ca49f1e3…`](https://stellar.expert/explorer/testnet/tx/ca49f1e3823936f10341881515aa8c43f456dd19383994cc31ea2c79612fd557) |
+| Staging contract: in-place `upgrade` → `migrate` | `CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2`, [`e8750115…`](https://stellar.expert/explorer/testnet/tx/e875011575e5ed561ca318a767cd372a5d25231f07b8e5641c72a608e6aa9d32) |
 | v1 contract (retired) | `CCAN5IDEZ3A3AZ5BH7BTETJOSWIHMSIIFXC2ZE53IALQOFZIO6D6LP2W` — settlement [`b848166e…`](https://stellar.expert/explorer/testnet/tx/b848166e1c87df3effe8ba96582eb3bc889d6a7e1cd8b940f4319032f70dd757) |
 | Smart account WASM | `1b5f4534a76322da2ad7c745f6900857a6802b0ca79850c35a03561df997785a` |
 | WebAuthn verifier | `CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F` |
 | Fee sponsor | `GA32FPOXI3Z4V3HSDFGLNSSJFAHL3OPCGOWSSH2LOQ6NXRTOO6ANFLOW` |
-| Passkey wallet deploy (sponsored) | [`8aaf3004…`](https://stellar.expert/explorer/testnet/tx/8aaf3004dd6d43a23e7c496afec3c8058c846d28a447d1b00d4d04e4322df44d) |
-| Passkey-signed `submit` to v2 (sponsored) | [`6cb354fb…`](https://stellar.expert/explorer/testnet/tx/6cb354fbfe28f0e0a79fa868fdc2fa718c82c448a5b33f5a4b9a55edd44f5d78) |
 | Anchor | `testanchor.stellar.org` (SEP-45 contract `CD3LA6RKF5D2FN2R2L57MWXLBRSEWWENE74YBEFZSSGNJRJGICFGQXMX`) |
 | Bank cash-out payment (SEP-24, muxed) | [`19d12e70…`](https://stellar.expert/explorer/testnet/tx/19d12e7070458c437ac5b487b2591d3829d40e5eaf6c97ac42baa1fd6bbf0a35) — 2 XLM → anchor status `completed` |
 
@@ -158,10 +169,13 @@ Prerequisites: Rust with the `wasm32v1-none` target, [Stellar CLI](https://devel
 pnpm install
 pnpm test                  # contract tests + funds invariant, error-code sync, verifier checks
 pnpm lint                  # rustfmt + clippy -D warnings
-./scripts/deploy.sh        # deploy to testnet, writes verifier/.env and web/.env.local
-./scripts/upgrade.sh       # later: upgrade the deployed contract in place
+./scripts/deploy.sh        # deploy to testnet → deployments/testnet.json + secrets in verifier/.env
+pnpm seed                  # optional: three demo campaigns with creator submissions
+cp web/.env.example web/.env.development.local   # point the dev web app at the local verifier
 pnpm dev:verifier          # terminal 1 — settles every POLL_SECONDS, serves :8787
 pnpm dev:web               # terminal 2 — http://localhost:5173
+./scripts/upgrade.sh       # later: upgrade the deployed contract in place
+pnpm deploy:cloudflare     # web app + verifier Worker (see below)
 ```
 
 Check the whole passkey path without a browser (software passkey, real testnet):
@@ -169,19 +183,34 @@ Check the whole passkey path without a browser (software passkey, real testnet):
 ```bash
 cd verifier && pnpm e2e:passkey 0   # creates a wallet, submits to campaign 0, settles
 cd verifier && pnpm e2e:anchor 2    # SEP-45 + SEP-24 cash-out; prints the anchor form URL to complete
+VERIFIER_URL=https://clippay.umesok.workers.dev/api pnpm e2e:passkey 0   # against the live relay
 ```
+
+### Cloudflare
+
+`pnpm deploy:cloudflare` ([script](scripts/deploy-cloudflare.sh)) builds the web app and
+deploys one Worker ([`wrangler.jsonc`](verifier/wrangler.jsonc)): static assets with
+SPA routing, and `/api/*` → a single Durable Object running the verifier and relay. The
+object sends transactions one at a time and settles every campaign once a minute from its
+own alarm (a cron trigger re-arms it). Secrets (`VERIFIER_SECRET`, `SPONSOR_SECRET`,
+`REVIEW_TOKEN`) are pushed with `wrangler secret bulk` over stdin. The Worker signs with
+its own verifier key (`clippay-verifier-prod`) so local verifiers never collide with its
+sequence numbers.
 
 `TOKEN=usdc ./scripts/deploy.sh` pays in Circle testnet USDC instead of XLM (wallets
 need a USDC trustline; get test USDC from the Circle faucet).
 
 ### Environment variables
 
-**verifier/.env**
+Contract IDs, RPC and network come from [`deployments/testnet.json`](deployments/testnet.json).
+Env vars hold secrets and tunables; `RPC_URL`, `CONTRACT_ID`, `TOKEN_ID` etc. can still
+override the deployment file.
+
+**verifier/.env** (Worker: `vars` in `wrangler.jsonc` + secrets)
 
 | Var | Meaning |
 |---|---|
-| `RPC_URL`, `NETWORK_PASSPHRASE` | Stellar RPC endpoint and network |
-| `CONTRACT_ID` | CampaignPool contract |
+| `NETWORK` | Which `deployments/<network>.json` to use (`testnet`) |
 | `VERIFIER_SECRET` | Secret key of the address the contract trusts as verifier |
 | `VIEW_PROVIDER` | `mock` (views grow `MOCK_VIEWS_PER_SECOND` from submission) or `youtube` |
 | `YOUTUBE_API_KEY` | YouTube Data API v3 key, for `youtube` |
@@ -190,16 +219,23 @@ need a USDC trustline; get test USDC from the Circle faucet).
 | `REVIEW_TOKEN` | Bearer token for `POST /review/:id/:creator` (`{"approve": true}`) |
 | `POLL_SECONDS`, `PORT` | Settlement interval and HTTP port |
 | `SETTLE_PER_IP_PER_MINUTE` | Rate limit on `POST /settle/:id` |
-| `TOKEN_ID` | Payout token SAC (withdrawals of it are sponsored) |
-| `ACCOUNT_WASM_HASH`, `WEBAUTHN_VERIFIER`, `SMART_ACCOUNT_DEPLOYER` | Smart-account deployment the relay will sponsor |
 | `SPONSOR_SECRET`, `SPONSOR_MAX_FEE_XLM` | Account that pays sponsored fees, and its per-tx cap |
 | `SPONSOR_MIN_XLM`, `ALERT_WEBHOOK_URL` | Low-balance alert threshold and Slack/Discord webhook |
 | `RELAY_PER_IP_PER_MINUTE`, `RELAY_PER_WALLET_PER_MINUTE` | Relay rate limits |
 | `OZ_CHANNELS_URL`, `OZ_CHANNELS_API_KEY` | Forward sponsored txs to OpenZeppelin Channels instead |
 
-**web/.env.local** — `VITE_RPC_URL`, `VITE_NETWORK_PASSPHRASE`, `VITE_CONTRACT_ID`,
-`VITE_TOKEN_ID`, `VITE_TOKEN_SYMBOL`, `VITE_VERIFIER_URL`, `VITE_ACCOUNT_WASM_HASH`,
-`VITE_WEBAUTHN_VERIFIER`, `VITE_ANCHOR_DOMAIN`.
+**web/.env.development.local** (dev only, optional) — `VITE_VERIFIER_URL` and other
+`VITE_*` overrides of the deployment file. Production builds use the deployment file,
+where `verifierUrl: "/api"` means the same origin as the app.
+
+## Demo data
+
+The live demo is seeded by `pnpm seed`: three campaigns from **fictional** brands
+([briefs](docs/briefs)) with submissions from testnet creator accounts. Seeded post links
+are placeholders, and the deployed verifier uses the `mock` view provider (views rise
+like a real post, then level off), because YouTube API keys and real creators come with
+the pilot. With `VIEW_PROVIDER=youtube` the same code reads real view counts and applies
+the ownership-tag, `#ad` and anti-fraud checks.
 
 ## Demo script
 
@@ -232,4 +268,22 @@ smart-account-kit and the relay are unaudited — testnet only. Next steps:
 
 ## Built during HackMeridian
 
-Everything in this repository was written during the event (25–26 Oct 2026).
+Everything in this repository was written during the event (25–26 Oct 2026):
+
+- **CampaignPool contract**: escrow, per-view settlement, refunds; then v2 with
+  OpenZeppelin Ownable / Pausable / Upgradeable, a capped platform fee, token allow-list,
+  paged storage and a rent policy — 24 tests, including a funds-conservation property test
+  run for 10,000 random cases.
+- **Passkey creator wallets** (smart-account-kit) with a fee-sponsoring relay that speaks
+  the OpenZeppelin Relayer protocol.
+- **Bank cash-out** through an anchor: SEP-1, SEP-45 for contract accounts, SEP-24, and a
+  muxed SAC transfer for the anchor's memo.
+- **Verifier** with YouTube and mock view providers, payout checks (ownership tag, `#ad`,
+  anti-fraud review), rate limits and sponsor alerts — running on Cloudflare Workers.
+- **Web app** for brands and creators: campaign list, detail and creation, live budgets
+  and cost per 1k views, fee breakdown, hold reasons, mobile and dark mode, accessible
+  dialogs (axe: no serious issues).
+- **Tooling**: generated TypeScript bindings, single deployment config, seed, deploy,
+  upgrade and Cloudflare scripts, CI, threat model and runbook.
+
+Plan and progress: [docs/improvement-plan.md](docs/improvement-plan.md).
