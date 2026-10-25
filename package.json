@@ -1,0 +1,21 @@
+{
+  "name": "clippay",
+  "private": true,
+  "scripts": {
+    "test:contract": "cargo test",
+    "build:contract": "stellar contract build",
+    "deploy": "./scripts/deploy.sh",
+    "dev:verifier": "pnpm --filter verifier dev",
+    "dev:web": "pnpm --filter web dev",
+    "typecheck": "pnpm -r typecheck",
+    "test": "cargo test && pnpm -r --if-present test",
+    "bindings": "./scripts/bindings.sh",
+    "upgrade": "./scripts/upgrade.sh",
+    "lint": "cargo fmt --all --check && cargo clippy -p campaign-pool --all-targets -- -D warnings"
+  },
+  "pnpm": {
+    "overrides": {
+      "@stellar/stellar-sdk": "~16.3.1"
+    }
+  }
+}

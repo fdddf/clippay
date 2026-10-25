@@ -1,0 +1,14 @@
+target/
+node_modules/
+dist/
+.env
+.env.local
+.stellar/
+.DS_Store
+*.log
+test_snapshots/
+# event notes and photos — kept local, not published
+docs/context.md
+docs/tracks.md
+docs/image*.png
+.wrangler/

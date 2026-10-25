@@ -1,0 +1,4 @@
+packages:
+  - packages/*
+  - verifier
+  - web
