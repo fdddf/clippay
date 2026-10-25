@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Build and deploy CampaignPool to testnet, then write env files for the
-# verifier and the web app.
+# Build and deploy CampaignPool, then record the deployment in
+# deployments/<network>.json — the one place the web app and the verifier read
+# contract IDs from. Secrets (and only secrets) go to verifier/.env.
 #
 #   ./scripts/deploy.sh                 # pays in native XLM (no trustlines needed)
 #   TOKEN=usdc ./scripts/deploy.sh      # pays in Circle testnet USDC
@@ -25,6 +26,7 @@ ACCOUNT_WASM_HASH=1b5f4534a76322da2ad7c745f6900857a6802b0ca79850c35a03561df99778
 WEBAUTHN_VERIFIER=CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F
 # smart-account-kit's shared, sign-only default deployer (seed "openzeppelin-smart-account-kit")
 SMART_ACCOUNT_DEPLOYER=GAAH4OT36RRCCAGKARGPN2HLHT2NOBVFHO4GUHA6CF7UKQ4MMV24WQ4N
+OUT=deployments/$NETWORK.json
 
 ensure_key() {
   stellar keys address "$1" >/dev/null 2>&1 || stellar keys generate "$1" --network "$NETWORK" --fund
@@ -36,6 +38,7 @@ ensure_key clippay-sponsor  # pays fees for passkey wallets
 ensure_key clippay-treasury # receives platform fees
 ADMIN=$(stellar keys address clippay-admin)
 VERIFIER=$(stellar keys address clippay-verifier)
+SPONSOR=$(stellar keys address clippay-sponsor)
 TREASURY=$(stellar keys address clippay-treasury)
 
 case "${TOKEN:-native}" in
@@ -46,7 +49,6 @@ esac
 TOKEN_ID=$(stellar contract id asset --asset "$ASSET" --network "$NETWORK")
 # Make sure the SAC exists (no-op error if it's already deployed)
 stellar contract asset deploy --asset "$ASSET" --source-account clippay-admin --network "$NETWORK" >/dev/null 2>&1 || true
-
 if [ "${TOKEN:-native}" = usdc ]; then
   # The treasury needs a trustline to receive USDC fees.
   stellar tx new change-trust --line "$ASSET" --source-account clippay-treasury --network "$NETWORK" >/dev/null 2>&1 || true
@@ -54,8 +56,12 @@ fi
 
 stellar contract build
 ./scripts/bindings.sh
-CONTRACT_ID=$(stellar contract deploy \
+# Upload is skipped by the CLI when this exact Wasm is already on-chain.
+WASM_HASH=$(stellar contract upload \
   --wasm target/wasm32v1-none/release/campaign_pool.wasm \
+  --source-account clippay-admin --network "$NETWORK")
+CONTRACT_ID=$(stellar contract deploy \
+  --wasm-hash "$WASM_HASH" \
   --source-account clippay-admin \
   --network "$NETWORK" \
   --alias campaign-pool \
@@ -69,59 +75,54 @@ CONTRACT_ID=$(stellar contract deploy \
 stellar contract invoke --id "$CONTRACT_ID" --source-account clippay-admin --network "$NETWORK" -- \
   set_rent_policy --policy "{\"margin\":$RENT_MARGIN,\"instance_ttl\":$INSTANCE_TTL}" >/dev/null
 
+# The public verifier URL is set by `pnpm deploy:cloudflare`; keep it across redeploys.
+VERIFIER_URL=$(python3 -c "import json,sys; print(json.load(open('$OUT')).get('verifierUrl',''))" 2>/dev/null || true)
+mkdir -p deployments
+python3 - "$OUT" <<PY
+import json, sys
+json.dump({
+    "network": "$NETWORK",
+    "rpcUrl": "$RPC_URL",
+    "networkPassphrase": "$PASSPHRASE",
+    "explorer": "https://stellar.expert/explorer/$NETWORK",
+    "campaignPool": {
+        "contractId": "$CONTRACT_ID",
+        "wasmHash": "$WASM_HASH",
+        "owner": "$ADMIN",
+        "verifier": "$VERIFIER",
+        "treasury": "$TREASURY",
+        "feeBps": $FEE_BPS,
+        "settleGrace": $SETTLE_GRACE,
+        "deployedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    },
+    "token": {"id": "$TOKEN_ID", "symbol": "$SYMBOL", "decimals": 7},
+    "smartAccount": {
+        "wasmHash": "$ACCOUNT_WASM_HASH",
+        "webauthnVerifier": "$WEBAUTHN_VERIFIER",
+        "deployer": "$SMART_ACCOUNT_DEPLOYER",
+    },
+    "sponsor": "$SPONSOR",
+    "anchor": {"domain": "testanchor.stellar.org"},
+    "verifierUrl": "${VERIFIER_URL:-http://localhost:8787}",
+}, open(sys.argv[1], "w"), indent=2)
+open(sys.argv[1], "a").write("\n")
+PY
+
+# Secrets only. Everything else comes from $OUT; tunables have defaults in
+# verifier/src/core.ts (see verifier/.env.example to override them).
 cat > verifier/.env <<ENV
-RPC_URL=$RPC_URL
-NETWORK_PASSPHRASE=$PASSPHRASE
-CONTRACT_ID=$CONTRACT_ID
-TOKEN_ID=$TOKEN_ID
+NETWORK=$NETWORK
 VERIFIER_SECRET=$(stellar keys show clippay-verifier)
-# youtube | mock — mock grows views over time so you can demo without an API key
-VIEW_PROVIDER=mock
-MOCK_VIEWS_PER_SECOND=40
-YOUTUBE_API_KEY=
-# Checks before a post is paid (YouTube only; see verifier/src/checks.ts)
-REQUIRE_OWNERSHIP_TAG=true
-REQUIRE_AD_DISCLOSURE=true
-MAX_VIEWS_PER_HOUR=500000
-MIN_LIKE_RATIO=0.002
-MIN_VIEWS_FOR_ENGAGEMENT=5000
-MIN_CHANNEL_AGE_DAYS=7
-# bearer token for POST /review/:id/:creator (approve or reject flagged posts)
-REVIEW_TOKEN=$(openssl rand -hex 16)
-POLL_SECONDS=60
-PORT=8787
-SETTLE_PER_IP_PER_MINUTE=6
-
-# --- fee sponsoring for passkey wallets (POST /relay) ---
-ACCOUNT_WASM_HASH=$ACCOUNT_WASM_HASH
-WEBAUTHN_VERIFIER=$WEBAUTHN_VERIFIER
-SMART_ACCOUNT_DEPLOYER=$SMART_ACCOUNT_DEPLOYER
 SPONSOR_SECRET=$(stellar keys show clippay-sponsor)
+REVIEW_TOKEN=$(openssl rand -hex 16)
+# mock | youtube (needs YOUTUBE_API_KEY)
+VIEW_PROVIDER=mock
 SPONSOR_MAX_FEE_XLM=250
-SPONSOR_MIN_XLM=200
-RELAY_PER_IP_PER_MINUTE=20
-RELAY_PER_WALLET_PER_MINUTE=6
-# Slack/Discord-compatible webhook for low-sponsor alerts (optional)
-ALERT_WEBHOOK_URL=
-# Set to forward sponsored txs to OpenZeppelin Channels instead (key from https://channels.openzeppelin.com/testnet/gen)
-OZ_CHANNELS_URL=https://channels.openzeppelin.com/testnet
-OZ_CHANNELS_API_KEY=
-ENV
-
-cat > web/.env.local <<ENV
-VITE_RPC_URL=$RPC_URL
-VITE_NETWORK_PASSPHRASE=$PASSPHRASE
-VITE_CONTRACT_ID=$CONTRACT_ID
-VITE_TOKEN_ID=$TOKEN_ID
-VITE_TOKEN_SYMBOL=$SYMBOL
-VITE_VERIFIER_URL=http://localhost:8787
-VITE_ACCOUNT_WASM_HASH=$ACCOUNT_WASM_HASH
-VITE_WEBAUTHN_VERIFIER=$WEBAUTHN_VERIFIER
 ENV
 
 echo
-echo "CampaignPool: $CONTRACT_ID"
+echo "CampaignPool: $CONTRACT_ID (Wasm $WASM_HASH)"
 echo "Token ($SYMBOL): $TOKEN_ID"
 echo "Verifier:     $VERIFIER"
 echo "Treasury:     $TREASURY (fee ${FEE_BPS} bps)"
-echo "Wrote verifier/.env and web/.env.local"
+echo "Wrote $OUT and verifier/.env"

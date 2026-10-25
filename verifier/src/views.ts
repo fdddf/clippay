@@ -21,16 +21,30 @@ export interface ViewProvider {
   stats(sub: Submission): Promise<PostStats>;
 }
 
-/** Demo provider: views grow linearly from the moment of submission. */
+/**
+ * Demo provider. Like a real post, views start at `viewsPerSecond` and level
+ * off: each post has its own ceiling (8k–80k, derived from its URL), reached
+ * along `ceiling × (1 − e^(−t/τ))` with τ = ceiling / viewsPerSecond.
+ */
 export function mockProvider(viewsPerSecond: number): ViewProvider {
   return {
     name: "mock",
     hasMetadata: false,
     async stats(sub) {
-      const elapsed = BigInt(Math.floor(Date.now() / 1000)) - sub.submitted_at;
-      return { views: elapsed > 0n ? elapsed * BigInt(viewsPerSecond) : 0n };
+      const elapsed = Date.now() / 1000 - Number(sub.submitted_at);
+      if (elapsed <= 0) return { views: 0n };
+      const ceiling = 8_000 + (hash(sub.url) % 72_000);
+      const views = ceiling * (1 - Math.exp((-elapsed * viewsPerSecond) / ceiling));
+      return { views: BigInt(Math.floor(views)) };
     },
   };
+}
+
+/** FNV-1a, for a stable per-post number. */
+function hash(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
+  return h;
 }
 
 interface YouTubeItem {

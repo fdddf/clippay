@@ -13,11 +13,7 @@ import {
 } from "@clippay/anchor";
 import { scriptKit } from "./soft-passkey.ts";
 
-const env = (k: string) => {
-  const v = process.env[k];
-  if (!v) throw new Error(`missing env ${k}`);
-  return v;
-};
+import { env } from "./config.ts";
 const verifierUrl = `http://localhost:${process.env.PORT ?? 8787}`;
 const amount = process.argv[2] ?? "2";
 const step = (s: string) => console.log(`\n▸ ${s}`);

@@ -16,6 +16,7 @@ import { mockProvider, youtubeProvider, type PostStats, type ViewProvider } from
 import { check, type Previous, type Rules } from "./checks.ts";
 import { createRelay } from "./relay.ts";
 import { rateLimiter } from "./limits.ts";
+import { deployment } from "@clippay/deployments";
 
 /** Reads a config value; throws if missing and no fallback is given. */
 export type EnvReader = (key: string, fallback?: string) => string;
@@ -52,23 +53,25 @@ export interface PostStatus {
 export type Verifier = Awaited<ReturnType<typeof createVerifier>>;
 
 export async function createVerifier(env: EnvReader) {
+  // Contract IDs come from deployments/<network>.json; env vars may override them.
+  const d = deployment(env("NETWORK", "testnet"));
   const keypair = Keypair.fromSecret(env("VERIFIER_SECRET"));
-  const networkPassphrase = env("NETWORK_PASSPHRASE");
+  const networkPassphrase = env("NETWORK_PASSPHRASE", d.networkPassphrase);
   const pool = await poolClient({
-    contractId: env("CONTRACT_ID"),
-    rpcUrl: env("RPC_URL"),
+    contractId: env("CONTRACT_ID", d.campaignPool.contractId),
+    rpcUrl: env("RPC_URL", d.rpcUrl),
     networkPassphrase,
     publicKey: keypair.publicKey(),
     ...contract.basicNodeSigner(keypair, networkPassphrase),
   });
 
   const relay = createRelay({
-    rpcUrl: env("RPC_URL"),
+    rpcUrl: env("RPC_URL", d.rpcUrl),
     networkPassphrase,
-    poolContractId: env("CONTRACT_ID"),
-    tokenId: env("TOKEN_ID"),
-    accountWasmHash: env("ACCOUNT_WASM_HASH"),
-    deployer: env("SMART_ACCOUNT_DEPLOYER"),
+    poolContractId: env("CONTRACT_ID", d.campaignPool.contractId),
+    tokenId: env("TOKEN_ID", d.token.id),
+    accountWasmHash: env("ACCOUNT_WASM_HASH", d.smartAccount.wasmHash),
+    deployer: env("SMART_ACCOUNT_DEPLOYER", d.smartAccount.deployer),
     sponsorSecret: env("SPONSOR_SECRET", "") || undefined,
     channelsUrl: env("OZ_CHANNELS_URL", "https://channels.openzeppelin.com/testnet"),
     channelsApiKey: env("OZ_CHANNELS_API_KEY", "") || undefined,
@@ -84,7 +87,7 @@ export async function createVerifier(env: EnvReader) {
   const provider: ViewProvider =
     env("VIEW_PROVIDER", "mock") === "youtube"
       ? youtubeProvider(env("YOUTUBE_API_KEY"))
-      : mockProvider(Number(env("MOCK_VIEWS_PER_SECOND", "40")));
+      : mockProvider(Number(env("MOCK_VIEWS_PER_SECOND", "10")));
   const flag = (k: string, fallback: string) => env(k, fallback) === "true";
   const rules: Rules = {
     requireOwnershipTag: flag("REQUIRE_OWNERSHIP_TAG", "true"),

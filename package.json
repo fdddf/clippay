@@ -11,7 +11,8 @@
     "test": "cargo test && pnpm -r --if-present test",
     "bindings": "./scripts/bindings.sh",
     "upgrade": "./scripts/upgrade.sh",
-    "lint": "cargo fmt --all --check && cargo clippy -p campaign-pool --all-targets -- -D warnings"
+    "lint": "cargo fmt --all --check && cargo clippy -p campaign-pool --all-targets -- -D warnings",
+    "seed": "pnpm --filter verifier seed"
   },
   "pnpm": {
     "overrides": {

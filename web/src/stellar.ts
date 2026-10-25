@@ -1,26 +1,31 @@
 // Network config and CampaignPool / token client helpers.
 import { contract } from "@stellar/stellar-sdk";
 import { poolClient, type PoolClient } from "@clippay/pool-client";
+import { deployment } from "@clippay/deployments";
 
+const env = import.meta.env;
+const d = deployment(env.VITE_NETWORK || "testnet");
+
+/** deployments/<network>.json, with optional VITE_* overrides for local dev. */
 export const config = {
-  rpcUrl: import.meta.env.VITE_RPC_URL as string,
-  networkPassphrase: import.meta.env.VITE_NETWORK_PASSPHRASE as string,
-  contractId: import.meta.env.VITE_CONTRACT_ID as string,
-  tokenId: import.meta.env.VITE_TOKEN_ID as string,
-  tokenSymbol: (import.meta.env.VITE_TOKEN_SYMBOL as string) || "XLM",
-  verifierUrl: (import.meta.env.VITE_VERIFIER_URL as string) || "http://localhost:8787",
-  accountWasmHash: import.meta.env.VITE_ACCOUNT_WASM_HASH as string,
-  webauthnVerifier: import.meta.env.VITE_WEBAUTHN_VERIFIER as string,
-  anchorDomain: (import.meta.env.VITE_ANCHOR_DOMAIN as string) || "testanchor.stellar.org",
+  rpcUrl: env.VITE_RPC_URL || d.rpcUrl,
+  networkPassphrase: env.VITE_NETWORK_PASSPHRASE || d.networkPassphrase,
+  contractId: env.VITE_CONTRACT_ID || d.campaignPool.contractId,
+  tokenId: env.VITE_TOKEN_ID || d.token.id,
+  tokenSymbol: env.VITE_TOKEN_SYMBOL || d.token.symbol,
+  verifierUrl: env.VITE_VERIFIER_URL || d.verifierUrl,
+  accountWasmHash: d.smartAccount.wasmHash,
+  webauthnVerifier: d.smartAccount.webauthnVerifier,
+  anchorDomain: env.VITE_ANCHOR_DOMAIN || d.anchor.domain,
+  explorer: d.explorer,
 };
 
 /** SEP-24 asset code of the payout token. */
 export const anchorAssetCode = config.tokenSymbol === "XLM" ? "native" : config.tokenSymbol;
 
 export const explorer = {
-  tx: (hash: string) => `https://stellar.expert/explorer/testnet/tx/${hash}`,
-  account: (id: string) =>
-    `https://stellar.expert/explorer/testnet/${id.startsWith("C") ? "contract" : "account"}/${id}`,
+  tx: (hash: string) => `${config.explorer}/tx/${hash}`,
+  account: (id: string) => `${config.explorer}/${id.startsWith("C") ? "contract" : "account"}/${id}`,
 };
 
 const clients = new Map<string, Promise<PoolClient>>();

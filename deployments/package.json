@@ -1,0 +1,11 @@
+{
+  "name": "@clippay/deployments",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Where CampaignPool and its dependencies are deployed, per network. Written by scripts/deploy.sh.",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./*.json": "./*.json"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "network": "testnet",
+  "rpcUrl": "https://soroban-testnet.stellar.org",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "explorer": "https://stellar.expert/explorer/testnet",
+  "campaignPool": {
+    "contractId": "CBYEMM7I4OXD5DTWGKCKT7NDLRB357W5Q32ZUX3Z7E5MQP37UQQYWVXT",
+    "wasmHash": "0b58c98a25e50e0d24ce4f5ed4c41cb520c2569572557434708e604c35f76cf8",
+    "owner": "GAMO4HPHHKVCX327AGSJILACAEUEJR5VPMTSRCIZONZAU3MYQSWROE6M",
+    "verifier": "GA4N2DNUDW5WKDR7RM3KBFJAL3I3S53NEUNUFO626KOVIXLPZVI24L3E",
+    "treasury": "GCBQ55XIHJZGOJGSJHUWIL7CZL7DDYWBZXB6AFW226JV52MN4374MLQ7",
+    "feeBps": 500,
+    "settleGrace": 300,
+    "deployedAt": "2026-10-25T17:56:34Z"
+  },
+  "token": {
+    "id": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+    "symbol": "XLM",
+    "decimals": 7
+  },
+  "smartAccount": {
+    "wasmHash": "1b5f4534a76322da2ad7c745f6900857a6802b0ca79850c35a03561df997785a",
+    "webauthnVerifier": "CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F",
+    "deployer": "GAAH4OT36RRCCAGKARGPN2HLHT2NOBVFHO4GUHA6CF7UKQ4MMV24WQ4N"
+  },
+  "sponsor": "GA32FPOXI3Z4V3HSDFGLNSSJFAHL3OPCGOWSSH2LOQ6NXRTOO6ANFLOW",
+  "anchor": {
+    "domain": "testanchor.stellar.org"
+  },
+  "verifierUrl": "http://localhost:8787"
+}

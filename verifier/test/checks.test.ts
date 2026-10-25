@@ -76,3 +76,14 @@ test("rate limiter allows N per minute per key", () => {
   assert.ok(limit.take("b", 2));
   assert.ok(limit.take("a", 60_001));
 });
+
+test("mock views rise quickly, then level off below the post's ceiling", async () => {
+  const { mockProvider } = await import("../src/views.ts");
+  const p = mockProvider(10);
+  const at = (secondsAgo: number) =>
+    p.stats({ ...sub, url: "https://youtu.be/demo", submitted_at: BigInt(Math.floor(Date.now() / 1000 - secondsAgo)) });
+  const [m1, h1, d7] = await Promise.all([at(60), at(3600), at(7 * 86400)]);
+  assert.ok(m1.views > 500n && m1.views <= 615n, `first minute: ${m1.views}`);
+  assert.ok(h1.views > m1.views && d7.views >= h1.views);
+  assert.ok(d7.views >= 8_000n && d7.views < 80_000n, `ceiling: ${d7.views}`);
+});

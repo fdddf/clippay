@@ -16,7 +16,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "smart-account-kit": "0.8.0",
-    "@clippay/anchor": "workspace:*"
+    "@clippay/anchor": "workspace:*",
+    "@clippay/deployments": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

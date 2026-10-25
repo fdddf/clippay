@@ -11,6 +11,8 @@ importers:
 
   .: {}
 
+  deployments: {}
+
   packages/anchor:
     dependencies:
       '@stellar/stellar-sdk':
@@ -55,6 +57,9 @@ importers:
       '@clippay/anchor':
         specifier: workspace:*
         version: link:../packages/anchor
+      '@clippay/deployments':
+        specifier: workspace:*
+        version: link:../deployments
       '@clippay/pool-client':
         specifier: workspace:*
         version: link:../packages/pool-client
@@ -80,6 +85,9 @@ importers:
       '@clippay/anchor':
         specifier: workspace:*
         version: link:../packages/anchor
+      '@clippay/deployments':
+        specifier: workspace:*
+        version: link:../deployments
       '@clippay/pool-client':
         specifier: workspace:*
         version: link:../packages/pool-client

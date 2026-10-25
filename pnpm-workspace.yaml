@@ -1,4 +1,5 @@
 packages:
+  - deployments
   - packages/*
   - verifier
   - web
