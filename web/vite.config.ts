@@ -15,12 +15,28 @@ function entryRouting(): Plugin {
         const url = new URL(req.url ?? "/", "http://localhost");
         const accept = req.headers.accept ?? "";
         if (req.method === "GET" && accept.includes("text/html") && !url.pathname.includes(".")) {
-          const entry = entryFor(url.pathname);
-          // Landing pages are their own HTML files in dev too.
-          req.url = entry === "landing" ? `/${LANDING_PAGES[url.pathname] ?? "index"}.html` : ENTRY_HTML[entry];
+          req.url = ENTRY_HTML[entryFor(url.pathname)];
         }
         next();
       });
+      // Prerendered markup has no HMR: when a file the landing pages render
+      // from changes, re-render them and reload.
+      server.watcher.on("change", (file) => {
+        const ssr = server.environments.ssr.moduleGraph;
+        if (!ssr.getModulesByFile(file)?.size) return;
+        ssr.invalidateAll();
+        server.ws.send({ type: "full-reload" });
+      });
+    },
+    // Landing pages: render the requested path into index.html, as
+    // scripts/prerender.ts does at build time. `originalUrl` is the path
+    // before the rewrite above.
+    async transformIndexHtml(html, ctx) {
+      if (!ctx.server || !html.includes("<!--app-->")) return html;
+      const path = new URL(ctx.originalUrl ?? "/", "http://localhost").pathname.replace(/(.)\/+$/, "$1");
+      const { render } = await ctx.server.ssrLoadModule("/src/landing/entry-server.tsx");
+      const page = render(path in LANDING_PAGES ? path : "/");
+      return html.replace("<!--head-->", page.head).replace("<!--app-->", page.html);
     },
   };
 }
@@ -35,6 +51,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        index: fileURLToPath(new URL("./index.html", import.meta.url)),
         app: fileURLToPath(new URL("./app.html", import.meta.url)),
         legacy: fileURLToPath(new URL("./legacy.html", import.meta.url)),
       },

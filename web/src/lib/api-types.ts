@@ -82,6 +82,8 @@ export interface ChainEvent {
   amount: string | null;
   fee: string | null;
   views: string | null;
+  /** The address's profile; only on /api/events. */
+  profile?: Profile | null;
 }
 
 export interface Stats {

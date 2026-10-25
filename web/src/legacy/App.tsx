@@ -5,6 +5,7 @@ import { ConnectModal, WalletPanel } from "./WalletUI.tsx";
 import { CampaignList } from "./pages/CampaignList.tsx";
 import { CreateCampaign } from "./pages/CreateCampaign.tsx";
 import { CampaignDetail } from "./pages/CampaignDetail.tsx";
+import { entryFor } from "../routing.ts";
 
 export interface Notice {
   kind: "ok" | "error";
@@ -42,6 +43,8 @@ function useRoute() {
       const a = (e.target as Element).closest?.("a");
       const href = a?.getAttribute("href");
       if (!a || !href?.startsWith("/") || a.target || e.defaultPrevented) return;
+      // Pages served by another entry (landing, new app) need a real navigation.
+      if (entryFor(new URL(href, location.origin).pathname) !== "legacy") return;
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       go(href);
@@ -114,7 +117,7 @@ export function App() {
           <span className="logo">▶</span> ClipPay
         </a>
         <nav>
-          <a href="/" className={path === "/" ? "active" : ""} aria-current={path === "/" ? "page" : undefined}>
+          <a href="/campaigns" className={path === "/campaigns" ? "active" : ""} aria-current={path === "/campaigns" ? "page" : undefined}>
             Campaigns
           </a>
           <a href="/new" className={path === "/new" ? "active" : ""} aria-current={path === "/new" ? "page" : undefined}>

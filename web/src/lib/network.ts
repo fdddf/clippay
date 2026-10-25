@@ -16,12 +16,16 @@ export const config = {
   tokenSymbol: env.VITE_TOKEN_SYMBOL || d.token.symbol,
   tokenDecimals: d.token.decimals,
   feeBps: d.campaignPool.feeBps,
+  /** Seconds after a deadline during which views are still paid. */
+  settleGrace: d.campaignPool.settleGrace,
   /** "/api" means the verifier is served from the same origin as the app (Cloudflare). */
   verifierUrl: new URL(env.VITE_VERIFIER_URL || d.verifierUrl, origin).href.replace(/\/$/, ""),
   accountWasmHash: d.smartAccount.wasmHash,
   webauthnVerifier: d.smartAccount.webauthnVerifier,
   anchorDomain: env.VITE_ANCHOR_DOMAIN || d.anchor.domain,
   explorer: d.explorer,
+  siteUrl: d.siteUrl,
+  repoUrl: d.repoUrl,
 };
 
 /** SEP-24 asset code of the payout token. */

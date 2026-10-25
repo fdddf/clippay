@@ -155,7 +155,7 @@ export function CampaignDetail({ id, wallet, connect, notify }: PageProps & { id
 
   return (
     <>
-      <a className="back" href="/">
+      <a className="back" href="/campaigns">
         ← All campaigns
       </a>
       <div className="detail-head">

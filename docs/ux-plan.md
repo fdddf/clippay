@@ -436,6 +436,16 @@
 
 合计约 28.5 小时。
 
+**进度（2026-10-25）：**
+
+| 阶段 | 状态 | 说明 |
+|---|---|---|
+| A1 设计系统 | ✅ 已上线 | 组件预览在 `/_ui`（仅开发环境） |
+| A2 数据层 | ✅ 已上线 | `/api/*`，D1 事件索引、简报、媒体、钱包登录 |
+| A3 Landing page | ✅ 已上线 | `/` 构建时预渲染（`web/scripts/prerender.ts`），首屏 JS 3.1 KB gzip；实时数据由 `src/landing/client.ts` 填充；OG 图 `public/og.png`（源文件 `web/design/og.svg`） |
+| A4 外框与内容页 | ✅ 已上线 | `/how-it-works`、`/security`、`/terms`、`/privacy`；三组截图与 axe（明 / 暗、375px）均通过 |
+| A5–A9 | 进行中 | `/campaigns`、`/c/:id`、`/new`、`/dashboard` 暂由旧版应用提供 |
+
 **质量门槛（每个阶段都要满足）：**
 - 功能：该阶段涉及的用户任务在线上从头到尾跑通（landing → 参加 → 到账 → 提现；landing → 建活动 → 管理 → 退款）。
 - 视觉：桌面、375px 手机、暗色模式三组截图逐页检查，没有错位、截断和旧样式残留。

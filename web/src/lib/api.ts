@@ -42,7 +42,7 @@ export const api = {
   campaigns: () => call<Campaign[]>("/campaigns"),
   campaign: (id: number, fresh = false) => call<CampaignDetail>(`/campaigns/${id}${fresh ? "?fresh" : ""}`),
   account: (address: string) => call<Account>(`/accounts/${address}`),
-  events: (q: { campaign?: number; address?: string; limit?: number }) =>
+  events: (q: { campaign?: number; address?: string; type?: string; limit?: number }) =>
     call<ChainEvent[]>(`/events?${new URLSearchParams(Object.entries(q).map(([k, v]) => [k, String(v)]))}`),
 
   uploadImage: (file: Blob) =>

@@ -78,6 +78,8 @@ stellar contract invoke --id "$CONTRACT_ID" --source-account clippay-admin --net
 # Where the web app finds the verifier: "/api" = same origin (the Cloudflare
 # Worker serves both). Kept across redeploys if changed by hand.
 VERIFIER_URL=$(python3 -c "import json,sys; print(json.load(open('$OUT')).get('verifierUrl',''))" 2>/dev/null || true)
+SITE_URL=$(python3 -c "import json,sys; print(json.load(open('$OUT')).get('siteUrl',''))" 2>/dev/null || true)
+REPO_URL=$(python3 -c "import json,sys; print(json.load(open('$OUT')).get('repoUrl',''))" 2>/dev/null || true)
 mkdir -p deployments
 python3 - "$OUT" <<PY
 import json, sys
@@ -105,6 +107,8 @@ json.dump({
     "sponsor": "$SPONSOR",
     "anchor": {"domain": "testanchor.stellar.org"},
     "verifierUrl": "${VERIFIER_URL:-/api}",
+    "siteUrl": "${SITE_URL:-http://localhost:5173}",
+    "repoUrl": "${REPO_URL:-https://github.com/fdddf/clippay}",
 }, open(sys.argv[1], "w"), indent=2)
 open(sys.argv[1], "a").write("\n")
 PY

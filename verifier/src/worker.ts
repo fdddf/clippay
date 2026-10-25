@@ -7,7 +7,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { describeError } from "@clippay/pool-client";
 import { createVerifier, envReader, type Verifier } from "./core.ts";
-import { ENTRY_HTML, LANDING_PAGES, entryFor } from "../../web/src/routing.ts";
+import { htmlFor } from "../../web/src/routing.ts";
 import { deployment } from "@clippay/deployments";
 import { handleApi } from "./api.ts";
 import { indexEvents } from "./indexer.ts";
@@ -100,8 +100,7 @@ export default {
     // Files (/favicon.svg, /manifest.webmanifest…) are served as they are.
     if (url.pathname.includes(".")) return env.ASSETS.fetch(req);
     // Pages: each path belongs to one of the web app's HTML entries (web/src/routing.ts).
-    const entry = entryFor(url.pathname);
-    const file = entry === "landing" ? `/${LANDING_PAGES[url.pathname] ?? "index"}.html` : ENTRY_HTML[entry];
+    const file = htmlFor(url.pathname);
     const res = await env.ASSETS.fetch(new Request(new URL(file, url), req));
     return new Response(res.body, {
       status: res.status,

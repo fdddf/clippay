@@ -7,7 +7,7 @@
 //   GET  /api/campaigns                every campaign, with its brief
 //   GET  /api/campaigns/:id            one campaign, its posts, checks and history
 //   GET  /api/accounts/:address        dashboard data for one account
-//   GET  /api/events?campaign=&address=&limit=
+//   GET  /api/events?campaign=&address=&type=&limit=   with each address's profile
 //   GET  /api/briefs/:hash · POST /api/briefs           content-addressed briefs
 //   GET  /api/media/:hash  · POST /api/media            content-addressed images
 //   GET  /api/auth/challenge?address=  · POST /api/auth/verify   wallet sign-in
@@ -380,9 +380,15 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
     if (req.method === "GET" && path === "/api/events") {
       const q = new URL(req.url).searchParams;
       const limit = Number(q.get("limit") ?? 50);
-      if (q.has("campaign")) return json(await events(env.DB, "WHERE campaign = ?", [Number(q.get("campaign"))], limit));
-      if (q.has("address")) return json(await events(env.DB, "WHERE address = ?", [q.get("address")], limit));
-      return json(await events(env.DB, "", [], limit));
+      const filters: [string, unknown][] = [];
+      if (q.has("campaign")) filters.push(["campaign = ?", Number(q.get("campaign"))]);
+      if (q.has("address")) filters.push(["address = ?", q.get("address")]);
+      if (q.has("type")) filters.push(["type = ?", q.get("type")]);
+      const where = filters.map(([w]) => w);
+      const binds = filters.map(([, b]) => b);
+      const list = await events(env.DB, where.length ? `WHERE ${where.join(" AND ")}` : "", binds, limit);
+      const people = await profiles(env.DB, list.flatMap((e) => (e.address ? [e.address] : [])));
+      return json(list.map((e) => ({ ...e, profile: (e.address && people.get(e.address)) || null })));
     }
 
     // -------------------------------------------------------- briefs, media
@@ -421,9 +427,10 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
     if (req.method === "GET" && r) {
       const row = await env.DB.prepare("SELECT mime, body FROM media WHERE hash = ?")
         .bind(r[1])
-        .first<{ mime: string; body: ArrayBuffer }>();
+        .first<{ mime: string; body: number[] | ArrayBuffer }>();
       if (!row) return new Response("Not found", { status: 404 });
-      return new Response(row.body, {
+      // D1 returns BLOB columns as arrays of byte values.
+      return new Response(new Uint8Array(row.body), {
         headers: {
           "Content-Type": row.mime,
           "Cache-Control": "public, max-age=31536000, immutable",

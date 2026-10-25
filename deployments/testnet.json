@@ -27,5 +27,7 @@
   "anchor": {
     "domain": "testanchor.stellar.org"
   },
-  "verifierUrl": "/api"
+  "verifierUrl": "/api",
+  "siteUrl": "https://clippay.umesok.workers.dev",
+  "repoUrl": "https://github.com/fdddf/clippay"
 }
