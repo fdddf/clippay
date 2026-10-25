@@ -65,3 +65,16 @@ export function hash32(s: string): number {
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
   return h;
 }
+
+/**
+ * An uploaded image (`/api/media/<hash>`) at a thumbnail size: 64 px for avatars
+ * up to 32 CSS px, 128 px for larger ones (2× for high-density screens).
+ * Other URLs are returned as they are.
+ */
+export function mediaThumb<T extends string | null | undefined>(src: T, cssPx: number): T {
+  if (!src || !/\/media\/[0-9a-f]{64}$/.test(src)) return src;
+  return `${src}?w=${cssPx <= 32 ? 64 : 128}` as T;
+}
+
+/** "1 post", "3 posts". */
+export const plural = (n: number | bigint, word: string) => `${n} ${n == 1 ? word : `${word}s`}`;

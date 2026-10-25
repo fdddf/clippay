@@ -55,7 +55,6 @@ export default defineConfig({
       input: {
         index: fileURLToPath(new URL("./index.html", import.meta.url)),
         app: fileURLToPath(new URL("./app.html", import.meta.url)),
-        legacy: fileURLToPath(new URL("./legacy.html", import.meta.url)),
       },
     },
   },

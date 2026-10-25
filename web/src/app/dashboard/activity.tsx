@@ -54,7 +54,7 @@ export function ActivityList({ events, me, campaigns }: { events: ChainEvent[]; 
             target="_blank"
             rel="noreferrer"
             className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            aria-label={`Transaction, ${relativeTime(e.ts)}`}
+            aria-label={`Receipt, ${relativeTime(e.ts)}`}
           >
             {relativeTime(e.ts)}
             <ExternalLink className="size-3" aria-hidden="true" />

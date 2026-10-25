@@ -237,7 +237,7 @@ function Audiences() {
       <Container>
         <SectionHeading
           id="audiences-title"
-          eyebrow="Two sides, one contract"
+          eyebrow="Two sides, one escrow"
           title="Built for brands that want reach and creators who want to get paid"
         />
         <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -255,7 +255,7 @@ function Audiences() {
               {
                 icon: <Lock aria-hidden="true" />,
                 title: "Your budget, held in escrow",
-                text: "Funds sit in the ClipPay contract and only move to creators or back to you. Refund the rest after the deadline.",
+                text: "Funds sit in escrow and only move to creators or back to you. Refund the rest after the deadline.",
               },
               {
                 icon: <Receipt aria-hidden="true" />,
@@ -309,7 +309,7 @@ function Steps() {
   const steps = [
     {
       title: "A brand locks a budget",
-      text: "They set a rate per 1,000 views, a cap per creator and a deadline. The budget goes into the contract, not to ClipPay.",
+      text: "They set a rate per 1,000 views, a cap per creator and a deadline. The budget goes into escrow, not to ClipPay.",
     },
     {
       title: "Creators post and submit",
@@ -317,7 +317,7 @@ function Steps() {
     },
     {
       title: "Views become payouts",
-      text: "The verifier checks views every minute and the contract pays creators directly. Unspent budget goes back to the brand.",
+      text: "Views are checked every minute and escrow pays creators directly. Unspent budget goes back to the brand.",
     },
   ];
   return (
@@ -389,17 +389,17 @@ function Trust() {
     {
       icon: <FileCode aria-hidden="true" />,
       title: "Open source",
-      text: "Contract, verifier and app are public, with property tests that check no funds are ever created or lost.",
+      text: "The escrow contract, view checker and app are public, with property tests that check no funds are ever created or lost.",
     },
     {
       icon: <BadgeCheck aria-hidden="true" />,
       title: "Verifiable payouts",
-      text: "Every payout, fee and refund is a contract event on Stellar that anyone can inspect.",
+      text: "Every payout, fee and refund is recorded on Stellar, with a receipt anyone can inspect.",
     },
     {
       icon: <Scale aria-hidden="true" />,
       title: "A fee you can read in the code",
-      text: `ClipPay takes ${feePct} of each payout — nothing on deposits or refunds. The contract caps it at 20%.`,
+      text: `ClipPay takes ${feePct} of each payout — nothing on deposits or refunds. Escrow caps it at 20%.`,
     },
   ];
   return (
@@ -443,23 +443,23 @@ function Trust() {
 export const FAQ: { q: string; a: ReactNode }[] = [
   {
     q: "Is this real money?",
-    a: "Not yet. ClipPay runs on Stellar's test network, where XLM is free from a faucet and has no value. Everything else — the contract, wallets, payouts and cash-out flow — works as it would on mainnet.",
+    a: "Not yet. ClipPay runs on Stellar's test network, where XLM is free from a faucet and has no value. Everything else — escrow, wallets, payouts and cash-out flow — works as it would on mainnet.",
   },
   {
     q: "How are views verified?",
-    a: "A verifier service reads each post's public view count from the platform and checks that the post follows the brief, such as including your campaign tag. The demo campaigns use simulated view counts so you can watch payouts arrive.",
+    a: "ClipPay's view checker reads each post's public view count from the platform and checks that the post follows the brief, such as including your campaign tag. The demo campaigns use simulated view counts so you can watch payouts arrive.",
   },
   {
     q: "When do creators get paid?",
-    a: `While a campaign is live, views are checked about once a minute and each check pays for the new ones. Checks continue for ${grace} after the deadline, then the campaign settles.`,
+    a: `While a campaign is live, views are checked about once a minute and each check pays for the new ones. Checks continue for ${grace} after the deadline, then the last payouts are made.`,
   },
   {
     q: "What does ClipPay charge?",
-    a: `${feePct} of each payout, so creators receive ${keepPct} of the campaign's rate. Deposits and refunds are free, and the contract won't accept a fee above 20%.`,
+    a: `${feePct} of each payout, so creators receive ${keepPct} of the campaign's rate. Deposits and refunds are free, and escrow won't accept a fee above 20%.`,
   },
   {
     q: "What happens to unspent budget?",
-    a: `It stays in the contract until the campaign ends. ${grace} after the deadline, once the last views are paid, the brand can refund everything that wasn't paid out.`,
+    a: `It stays in escrow until the campaign ends. ${grace} after the deadline, once the last views are paid, the brand can refund everything that wasn't paid out.`,
   },
   {
     q: "Do I need a crypto wallet?",

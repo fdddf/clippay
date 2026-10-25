@@ -7,7 +7,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { describeError } from "@clippay/pool-client";
 import { createVerifier, envReader, type Verifier } from "./core.ts";
-import { ENTRY_HTML, htmlFor } from "../../web/src/routing.ts";
+import { ENTRY_HTML, htmlFor, isAppRoute } from "../../web/src/routing.ts";
 import { deployment } from "@clippay/deployments";
 import { campaignHead, handleApi } from "./api.ts";
 import { indexEvents } from "./indexer.ts";
@@ -83,7 +83,7 @@ const stub = (env: Env) => env.VERIFIER.get(env.VERIFIER.idFromName("main"));
 /** Titles and share cards for app pages, so links unfurl with the right preview. */
 async function withHead(page: Response, url: URL, env: Env): Promise<Response> {
   let head: { title: string; description: string; image: string } | null = null;
-  let status = page.status;
+  let status = isAppRoute(url.pathname) ? page.status : 404;
   const c = url.pathname.match(/^\/c\/(\d+)\/?$/);
   if (c) {
     const found = await campaignHead(env, Number(c[1])).catch(() => undefined);

@@ -17,7 +17,7 @@ import { Prose } from "@/landing/Content";
 import { ApiError } from "@/lib/api";
 import type { CampaignDetail } from "@/lib/api-types";
 import { CATEGORY_LABEL, PLATFORM_LABEL } from "@/lib/brief";
-import { compactNumber, formatUnits, timeLeft } from "@/lib/format";
+import { compactNumber, formatUnits, plural, timeLeft } from "@/lib/format";
 import { Markdown } from "@/lib/markdown";
 import { config, explorer } from "@/lib/network";
 import { cn } from "@/lib/utils";
@@ -60,7 +60,7 @@ function Brief({ c }: { c: CampaignDetail }) {
       <p className="flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground">
         <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         {c.briefSource === "hash"
-          ? "This brief is pinned to the campaign by its hash, so it can't change after you join."
+          ? "This brief is locked to the campaign, so it can't change after you join."
           : "The brand added this brief after launch. Its fingerprint is stored with the campaign."}
         {c.brief.demo ? " The brand is fictional — this is a demo campaign." : ""}
       </p>
@@ -123,7 +123,7 @@ function Stats({ c }: { c: CampaignDetail }) {
       value: <Amount units={BigInt(c.remaining)} decimals={c.decimals} maxFrac={0} />,
       hint: `${budgetLeftPct(c)}% of ${formatUnits(BigInt(c.budget), c.decimals, 0)}`,
     },
-    { label: "Paid to creators", value: <Amount units={BigInt(c.paid)} decimals={c.decimals} />, hint: `${c.creators} creators` },
+    { label: "Paid to creators", value: <Amount units={BigInt(c.paid)} decimals={c.decimals} />, hint: plural(c.creators, "creator") },
     { label: "Verified views", value: compactNumber(views), hint: "across all posts" },
     {
       label: (
@@ -156,7 +156,7 @@ function Stats({ c }: { c: CampaignDetail }) {
         className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
       >
         <BadgeCheck className="size-3.5" aria-hidden="true" />
-        Every payout is a transaction on Stellar — check the contract
+        Budget locked in escrow · View contract
         <ExternalLink className="size-3" aria-hidden="true" />
       </a>
     </section>

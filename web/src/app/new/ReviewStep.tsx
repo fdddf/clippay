@@ -101,7 +101,7 @@ export function ReviewStep({ d, a, wallet }: { d: Draft; a: Amounts; wallet: Wal
                 "Shown in Freighter before you sign"
               )
             ) : (
-              "Covered by ClipPay for passkey wallets; Freighter shows it before you sign"
+              "Covered by ClipPay for Face ID wallets; Freighter shows it before you sign"
             )}
           </Row>
         </dl>
@@ -124,9 +124,9 @@ export function ReviewStep({ d, a, wallet }: { d: Draft; a: Amounts; wallet: Wal
           What you're agreeing to
         </h2>
         <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
-          <li>The budget moves into the ClipPay contract and can only go to creators or back to you.</li>
+          <li>The budget moves into escrow and can only go to creators or back to you.</li>
           <li>The brief, rate, cap and end date can't be changed after launch. You can add budget.</li>
-          <li>Payouts for verified views are final. The unspent budget is yours to refund once the campaign settles.</li>
+          <li>Payouts for verified views are final. The unspent budget is yours to refund after the final payouts.</li>
           <li>
             This is Stellar's test network: {config.tokenSymbol} here has no real value.{" "}
             <a href="/terms" className="font-medium text-primary hover:underline">

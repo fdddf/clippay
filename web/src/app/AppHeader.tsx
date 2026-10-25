@@ -51,7 +51,7 @@ function AccountMenu() {
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="font-normal">
           <p className="text-xs text-muted-foreground">
-            {wallet.kind === "passkey" ? "Passkey wallet" : wallet.kind === "freighter" ? "Freighter" : "Read-only preview"}
+            {wallet.kind === "passkey" ? "Face ID wallet" : wallet.kind === "freighter" ? "Freighter" : "Read-only preview"}
           </p>
           <p className="mt-0.5 font-mono text-xs">{shortAddress(wallet.address, 6)}</p>
         </DropdownMenuLabel>

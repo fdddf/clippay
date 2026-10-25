@@ -3,7 +3,7 @@
 import "@/styles/landing.css";
 import type { Campaign, ChainEvent, Profile, Stats } from "@/lib/api-types";
 import { CATEGORY_LABEL, PLATFORM_LABEL } from "@/lib/brief";
-import { compactNumber, formatUnits, hash32, relativeTime, shortAddress, timeLeft } from "@/lib/format";
+import { compactNumber, formatUnits, hash32, mediaThumb, relativeTime, shortAddress, timeLeft } from "@/lib/format";
 import { storedSession } from "@/lib/session";
 
 const POLL_MS = 20_000;
@@ -46,7 +46,7 @@ function avatar(el: HTMLElement, seed: string, name: string | null, src: string 
   el.className = `relative flex size-8 shrink-0 items-center justify-center overflow-hidden text-xs font-semibold text-white ${shape}`;
   if (src) {
     const img = document.createElement("img");
-    img.src = src;
+    img.src = mediaThumb(src, 32);
     img.alt = "";
     img.width = img.height = 32;
     img.className = "size-full object-cover";

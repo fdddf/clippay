@@ -12,7 +12,7 @@ import { Stat } from "@/components/Stat";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
-import { compactNumber, formatUnits } from "@/lib/format";
+import { compactNumber, formatUnits, plural } from "@/lib/format";
 import { config, explorer } from "@/lib/network";
 import { AppLink } from "../AppLink";
 import { useTitle } from "../useTitle";
@@ -46,9 +46,9 @@ export default function Earnings() {
 
   return (
     <>
-      <PageHeader title="Earnings" description="Every payout is a transaction on Stellar, straight to your wallet." />
+      <PageHeader title="Earnings" description="Every payout goes straight to your wallet, with a receipt on Stellar." />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <Stat label="Earned in total" value={<Amount units={total} className="text-money" />} hint={`from ${a.submissions.length} posts`} />
+        <Stat label="Earned in total" value={<Amount units={total} className="text-money" />} hint={`from ${plural(a.submissions.length, "post")}`} />
         <Stat label="This month" value={<Amount units={BigInt(a.totals.earnedThisMonth)} />} hint={format(new Date(), "MMMM")} />
         <Stat label="Views paid for" value={compactNumber(BigInt(a.totals.views))} hint="across all posts" />
       </div>

@@ -448,14 +448,13 @@
 | A6 建活动向导 | ✅ 已上线 | `/new` 三步（简报 → 预算 → 确认），右侧实时预览卡；Markdown 简报带预览和模板，#ad 规则常驻，Logo 上传；预算计算器（最多播放量、可覆盖创作者数、创作者实得）、余额校验与测试币指引；确认页列出锁定金额、费用、网络费估算（Freighter 模拟交易）、截止与可退款时间；草稿存在本地。简报按 hash 存储，链上链接指向 `/b/<hash>`（新页面）。签名步骤需真实 passkey / Freighter，自动化浏览器只验证到签名前和失败路径 |
 | A7 用户中心 | ✅ 已上线 | `/dashboard` 侧栏（手机为底部标签栏），页签按账户实际内容显示：Overview（余额、本月收入 / 活动花费、待处理事项、最近动态、推荐活动；新账户显示两个入口）、Campaigns 与单个活动管理（KPI、按小时 / 天的花费与新增播放量图、预计耗尽时间、创作者状态与暂缓原因、追加预算、核验、退款、CSV 导出）、Submissions（暂缓修复指引、刷新播放量）、Earnings（按活动、按时间、逐笔付款及交易链接）、Wallet（提现到银行四步流程、转账到地址并二次确认、本设备提现记录）、Settings（显示名称、头像、简介，保存时用钱包签名登录）。新增 `GET /api/campaigns/:id/daily` |
 | A8 登录与引导 | ✅ 已上线 | 登录弹窗先选角色（"I make videos" / "I run a brand"），创作者路径是 passkey（Face ID、无助记词、无手续费），品牌路径是 Freighter，两条路径可互相切换；参加活动和建活动时直接进入对应路径。首次创建 passkey 钱包后显示一次说明（钱包在哪、怎么提现、换设备怎么办，如实写明暂不支持找回）。`InfoHint` 解释 passkey、anchor、网络费、千次成本 |
-| A9 全站打磨 | 未开始 | 见下方交接说明 |
+| A9 全站打磨 | ✅ 已上线 | 删除旧版应用（`legacy.html`、`src/legacy/`），未知路径由新应用显示 404 页并返回 404 状态码；术语表走查（contract → escrow、passkey wallet → Face ID wallet、settle → final payouts、交易链接统一为 receipt）；`/campaigns`、`/c/:id`、`/b/:hash` 改为按需加载，应用首屏 JS 从约 187 KB 降到 161 KB gzip；生产环境的 `?as=` 不再触发加载钱包库；`GET /api/media/:hash?w=64\|128` 用 resvg 生成方形缩略图，头像按显示尺寸取用（64 px 版本约为原图的 1/4）；手机端统计卡长金额换行、单复数修正。Lighthouse（本地生产构建，手机模拟）：无障碍全部 100；性能 landing 99、`/how-it-works` 99、`/dashboard` 94、`/campaigns` 91、`/c/:id` 90、`/new` 87 |
 
-**交接说明（2026-10-25 22:30 WET，截止 10/26 12:00 WET）：**
+**交接说明（2026-10-25 23:30 WET 更新，截止 10/26 12:00 WET）：**
 
-- 线上：https://clippay.umesok.workers.dev（自定义域 clippay.hr.edu.kg），A1–A8 均已部署，最新提交 `50ef164` 已推送，CI 绿。
-- 剩余工作，按优先级：
-  1. **P0-6 视频脚本 + deck**（用户录制，需在截止前留出时间）。演示路线建议：landing → `/campaigns` → `/c/:id`（参加卡、排行、分享图）→ `/new` 三步向导 → `/dashboard`（概览、活动管理图表、收入、钱包提现四步）。
-  2. **A9**：删除旧版应用（`web/legacy.html`、`src/legacy/`、`routing.ts` 里的 `legacy` 入口；未知路径改为新应用 404）；术语表文案走查；应用代码分割（`app-*.js` 约 105 KB gzip + 共享块 70 KB）；品牌 logo 生成小尺寸版本（Lighthouse 提示 uses-responsive-images）；全站再跑一遍 Lighthouse 与 axe。
+- 线上：https://clippay.umesok.workers.dev（自定义域 clippay.hr.edu.kg），A1–A9 均已部署。
+- 剩余工作：**P0-6 视频脚本 + deck**（用户录制，需在截止前留出时间）。演示路线建议：landing → `/campaigns` → `/c/:id`（参加卡、排行、分享图）→ `/new` 三步向导 → `/dashboard`（概览、活动管理图表、收入、钱包提现四步）。
+- 可选的后续优化：已登录用户进入应用时，恢复 passkey 会话需要加载钱包库和 Stellar SDK（约 140 KB gzip）；可以先用本地记住的地址渲染只读界面，签名时再加载。
 - 未在自动化浏览器里验证的部分（需要真实 passkey 或 Freighter 签名）：`/new` 最终签名上链、参加活动提交、追加预算 / 退款、设置页保存资料、提现。签名前的流程和失败路径都已验证；签名调用与旧版应用相同。建议录视频前用真机走一遍。
 - 本地开发：`.claude/launch.json` 的 `web`（5173，`/api` 代理到 8790 的 `wrangler dev`）；开发环境可用 `?as=<地址>` 以只读身份预览任意账户（如 `/dashboard?as=GBZG…`）。`web-live-api`（5175）把 `/api` 代理到线上。
 - 部署：`./scripts/deploy-cloudflare.sh`（构建、D1 迁移带重试、Worker 部署、推送 secrets）。

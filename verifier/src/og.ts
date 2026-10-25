@@ -145,6 +145,34 @@ export function campaignOgSvg(c: Campaign, { brandName, symbol, host, logo }: Ca
 </svg>`;
 }
 
+const thumbs = new Map<string, Uint8Array>();
+
+/**
+ * A square PNG thumbnail of an uploaded logo or avatar, cropped to fill like
+ * `object-cover`. Null when resvg can't read the image (it reads PNG and JPEG).
+ */
+export async function thumbnailPng(img: { hash: string; mime: string; body: Uint8Array }, size: number): Promise<Uint8Array | null> {
+  if (!/^image\/(png|jpeg)$/.test(img.mime)) return null;
+  const key = `${img.hash}|${size}`;
+  const hit = thumbs.get(key);
+  if (hit) return hit;
+
+  ready ??= initWasm(resvgWasm);
+  await ready;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <image href="data:${img.mime};base64,${base64(img.body)}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid slice"/>
+</svg>`;
+  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: size } });
+  const image = resvg.render();
+  const png = image.asPng();
+  image.free();
+  resvg.free();
+
+  if (thumbs.size >= CACHE_MAX) thumbs.delete(thumbs.keys().next().value!);
+  thumbs.set(key, png);
+  return png;
+}
+
 /** The campaign's share image as PNG. */
 export async function campaignOgPng(c: Campaign, card: Card): Promise<Uint8Array> {
   const { brandName, logo } = card;

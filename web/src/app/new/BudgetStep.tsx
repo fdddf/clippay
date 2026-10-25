@@ -68,10 +68,10 @@ export function BudgetStep({
           hint={
             wallet && balance !== undefined && balance !== null ? (
               <>
-                Your wallet holds <Amount units={balance} />. The budget is locked in the contract until the campaign ends.
+                Your wallet holds <Amount units={balance} />. The budget is locked in escrow until the campaign ends.
               </>
             ) : (
-              "Locked in the contract until the campaign ends; whatever isn't paid out comes back to you."
+              "Locked in escrow until the campaign ends; whatever isn't paid out comes back to you."
             )
           }
         >

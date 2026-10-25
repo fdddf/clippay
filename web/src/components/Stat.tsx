@@ -22,7 +22,8 @@ export function Stat({
         <span>{label}</span>
         {icon && <span className="text-muted-foreground/70 [&_svg]:size-4">{icon}</span>}
       </div>
-      <div className="tabular text-2xl font-semibold tracking-tight">{value}</div>
+      {/* On narrow two-column grids a long amount drops its unit to the next line rather than overflow. */}
+      <div className="tabular text-xl font-semibold tracking-tight sm:text-2xl [&_.whitespace-nowrap]:whitespace-normal">{value}</div>
       {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
     </Card>
   );

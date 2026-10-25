@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import type { CampaignDetail, Submission } from "@/lib/api-types";
-import { compactNumber, formatUnits, parseUnits, timeLeft } from "@/lib/format";
+import { compactNumber, formatUnits, parseUnits, plural, timeLeft } from "@/lib/format";
 import { config } from "@/lib/network";
 import { AppLink } from "../AppLink";
 import { ShareMenu } from "../campaign/ShareMenu";
@@ -284,7 +284,7 @@ export default function CampaignManage() {
       />
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Stat label="Spent" value={<Amount units={spent} decimals={c.decimals} />} hint={<>of <Amount units={BigInt(c.budget)} decimals={c.decimals} maxFrac={0} /></>} />
-        <Stat label="Verified views" value={compactNumber(BigInt(c.views))} hint={`${c.creators} creators`} />
+        <Stat label="Verified views" value={compactNumber(BigInt(c.views))} hint={plural(c.creators, "creator")} />
         <Stat
           label="Cost per 1k views"
           value={cpm === null ? "—" : <Amount units={cpm} decimals={c.decimals} />}

@@ -4,8 +4,7 @@ import { entryFor } from "@/routing";
 
 /**
  * A link that stays in the app when the target is one of its routes and
- * does a normal navigation otherwise (landing pages, routes still served by
- * the legacy app).
+ * does a normal navigation otherwise (the prerendered landing pages).
  */
 export function AppLink({ href, ...props }: Omit<ComponentProps<"a">, "href"> & { href: string }) {
   const inApp = href.startsWith("/") && entryFor(new URL(href, location.origin).pathname) === "app";

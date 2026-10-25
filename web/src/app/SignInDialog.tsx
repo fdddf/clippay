@@ -84,7 +84,7 @@ export function SignInDialog({
     <section aria-labelledby="signin-passkey" className="rounded-xl border p-4">
       <h3 id="signin-passkey" className="flex items-center gap-2 font-medium">
         <Fingerprint className="size-4 text-primary" aria-hidden="true" />
-        Passkey wallet
+        Face ID wallet
         <InfoHint term="passkey" label="a passkey" />
       </h3>
       {creating ? (
@@ -216,7 +216,7 @@ export function SignInDialog({
             <p className="text-center text-xs text-muted-foreground">
               No Stellar wallet?{" "}
               <button type="button" className="font-medium text-primary hover:underline" onClick={() => setRole("creator")} disabled={!!busy}>
-                Use a passkey wallet
+                Use a Face ID wallet
               </button>
             </p>
           </>

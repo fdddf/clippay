@@ -3,7 +3,7 @@ import { Amount } from "@/components/Amount";
 import { CampaignCard } from "@/components/CampaignCard";
 import { Stat } from "@/components/Stat";
 import { buttonVariants } from "@/components/ui/button";
-import { compactNumber, timeLeft } from "@/lib/format";
+import { compactNumber, plural, timeLeft } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppLink } from "../AppLink";
 import { holdOf } from "../campaign/shared";
@@ -130,7 +130,7 @@ export default function Overview() {
             }
           />
         )}
-        {isCreator && <Stat label="Views verified" value={compactNumber(BigInt(a.totals.views))} hint={`${a.submissions.length} posts`} />}
+        {isCreator && <Stat label="Views verified" value={compactNumber(BigInt(a.totals.views))} hint={plural(a.submissions.length, "post")} />}
         {isBrand && (
           <Stat
             label="Spent on campaigns"

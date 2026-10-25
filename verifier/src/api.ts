@@ -10,7 +10,7 @@
 //   GET  /api/accounts/:address        dashboard data for one account
 //   GET  /api/events?campaign=&address=&type=&limit=   with each address's profile
 //   GET  /api/briefs/:hash · POST /api/briefs           content-addressed briefs
-//   GET  /api/media/:hash  · POST /api/media            content-addressed images
+//   GET  /api/media/:hash[?w=64|128]  · POST /api/media  content-addressed images (w: square thumbnail)
 //   GET  /api/auth/challenge?address=  · POST /api/auth/verify   wallet sign-in
 //   GET  /api/me · PUT /api/profile                     the signed-in account's profile
 //   PUT  /api/campaigns/:id/brief                       brand attaches a brief (signed in)
@@ -44,7 +44,7 @@ import {
   validateBrief,
   type Brief,
 } from "../../web/src/lib/brief.ts";
-import { campaignOgPng } from "./og.ts";
+import { campaignOgPng, thumbnailPng } from "./og.ts";
 import { createSessions } from "./session.ts";
 import { rateLimiter } from "./limits.ts";
 
@@ -59,6 +59,8 @@ export interface ApiEnv {
 
 const CACHE_MS = 10_000;
 const MEDIA_MAX = 256 * 1024;
+/** Thumbnail widths `GET /api/media/:hash?w=` serves: 2× the avatar sizes in the app. */
+const THUMB_SIZES = [64, 128];
 const MEDIA_TYPES: Record<string, (b: Uint8Array) => boolean> = {
   "image/png": (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
   "image/jpeg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
@@ -514,9 +516,16 @@ export async function handleApi(req: Request, env: ApiEnv, path: string): Promis
         .first<{ mime: string; body: number[] | ArrayBuffer }>();
       if (!row) return new Response("Not found", { status: 404 });
       // D1 returns BLOB columns as arrays of byte values.
-      return new Response(new Uint8Array(row.body), {
+      let body = new Uint8Array(row.body);
+      let mime = row.mime;
+      const w = Number(new URL(req.url).searchParams.get("w"));
+      if (THUMB_SIZES.includes(w)) {
+        const thumb = await thumbnailPng({ hash: r[1]!, mime, body }, w).catch(() => null);
+        if (thumb && thumb.length < body.length) [body, mime] = [new Uint8Array(thumb), "image/png"];
+      }
+      return new Response(body, {
         headers: {
-          "Content-Type": row.mime,
+          "Content-Type": mime,
           "Cache-Control": "public, max-age=31536000, immutable",
           "X-Content-Type-Options": "nosniff",
           "Content-Security-Policy": "default-src 'none'; sandbox",

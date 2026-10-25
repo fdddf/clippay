@@ -14,7 +14,8 @@ export const loadWallet = () => import("@/lib/wallet");
 const LAST_KIND = "clippay.wallet";
 const hadWallet = () => {
   try {
-    return localStorage.getItem(LAST_KIND) !== null || new URLSearchParams(location.search).has("as");
+    // `?as=` previews an account in dev only (see restoreWallet).
+    return localStorage.getItem(LAST_KIND) !== null || (import.meta.env.DEV && new URLSearchParams(location.search).has("as"));
   } catch {
     return false;
   }

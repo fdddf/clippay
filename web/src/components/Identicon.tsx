@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { hash32 } from "@/lib/format";
+import { hash32, mediaThumb } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,9 +33,10 @@ export function Identicon({
     .map((w) => w[0]!.toUpperCase())
     .join("");
   const sizes = { sm: "size-6 text-[10px]", default: "size-8 text-xs", lg: "size-10 text-sm", xl: "size-14 text-lg" };
+  const px = { sm: 24, default: 32, lg: 40, xl: 56 };
   return (
     <Avatar className={cn(sizes[size], square && "rounded-[28%]", className)}>
-      {src && <AvatarImage src={src} alt="" className="object-cover" />}
+      {src && <AvatarImage src={mediaThumb(src, px[size])} alt="" className="object-cover" />}
       <AvatarFallback
         className={cn("font-semibold text-white", square && "rounded-[28%]")}
         style={{ background: `linear-gradient(135deg, oklch(0.62 0.15 ${hue}), oklch(0.5 0.16 ${hue2}))` }}

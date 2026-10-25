@@ -154,7 +154,7 @@ export default function WalletPage() {
         </h2>
         <p className="mt-1 text-3xl font-semibold tracking-tight">{balance !== undefined ? <Amount units={balance} /> : "—"}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t pt-4 text-sm">
-          <span className="text-muted-foreground">{wallet.kind === "passkey" ? "Passkey wallet" : wallet.kind === "freighter" ? "Freighter" : "Read-only preview"}</span>
+          <span className="text-muted-foreground">{wallet.kind === "passkey" ? "Face ID wallet" : wallet.kind === "freighter" ? "Freighter" : "Read-only preview"}</span>
           <AddressChip address={wallet.address} size="sm" />
         </div>
       </section>
@@ -185,7 +185,7 @@ export default function WalletPage() {
       ) : (
         <p className="mt-8 rounded-xl border bg-card p-5 text-sm text-muted-foreground shadow-sm">
           This is a Freighter wallet: send or cash out from Freighter itself. Cashing out to a bank from ClipPay works with
-          passkey wallets.
+          Face ID wallets.
         </p>
       )}
 
@@ -193,7 +193,7 @@ export default function WalletPage() {
         <h2 id="history-title" className="font-semibold">
           Withdrawals
         </h2>
-        <p className="mt-1 text-xs text-muted-foreground">Only withdrawals made on this device are listed here. Every transfer is on Stellar Expert.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Only withdrawals made on this device are listed here. Each date opens the transfer's receipt.</p>
         {history.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">No withdrawals yet.</p>
         ) : (
@@ -206,7 +206,7 @@ export default function WalletPage() {
                   </span>{" "}
                   {h.kind === "bank" ? <>to your bank{h.to ? ` (${h.to})` : ""}</> : <>to {shortAddress(h.to)}</>}
                 </span>
-                <a href={explorer.tx(h.hash)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                <a href={explorer.tx(h.hash)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" aria-label={`Receipt, ${format(new Date(h.ts * 1000), "MMM d, HH:mm")}`}>
                   {format(new Date(h.ts * 1000), "MMM d, HH:mm")}
                   <ExternalLink className="size-3" aria-hidden="true" />
                 </a>

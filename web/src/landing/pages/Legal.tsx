@@ -61,10 +61,10 @@ export function Terms() {
             <ul>
               <li>You're responsible for your brief and for making sure what you ask creators to make is lawful.</li>
               <li>
-                A campaign's budget is locked in the contract until the campaign settles. Its rate, cap and deadline
+                A campaign's budget is locked in escrow until its final payouts are made. Its rate, cap and deadline
                 can't be changed once it's created.
               </li>
-              <li>Payouts to creators are final; unspent budget can be refunded after settlement.</li>
+              <li>Payouts to creators are final; unspent budget can be refunded after the final payouts.</li>
             </ul>
           </Prose>
         </Section>

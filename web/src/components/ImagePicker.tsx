@@ -4,6 +4,7 @@ import { ImagePlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/app/errors";
 import { api, mediaUrl } from "@/lib/api";
+import { mediaThumb } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -52,7 +53,7 @@ export function ImagePicker({
           {busy ? (
             <Loader2 className="size-5 animate-spin" aria-hidden="true" />
           ) : value ? (
-            <img src={mediaUrl(value)!} alt={`Your ${label.toLowerCase()}`} className="size-full object-cover" />
+            <img src={mediaThumb(mediaUrl(value)!, 56)} alt={`Your ${label.toLowerCase()}`} className="size-full object-cover" />
           ) : (
             <ImagePlus className="size-5" aria-hidden="true" />
           )}
