@@ -173,7 +173,7 @@ export function JoinCard({ c }: { c: CampaignDetail }) {
         className="mt-5 flex items-center gap-2 border-t pt-4 text-xs text-muted-foreground hover:text-foreground"
       >
         <Lock className="size-3.5" aria-hidden="true" />
-        Budget locked in the ClipPay contract
+        Budget locked in escrow
         <ExternalLink className="ml-auto size-3" aria-hidden="true" />
       </a>
     </section>

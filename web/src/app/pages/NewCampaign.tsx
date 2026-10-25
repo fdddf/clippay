@@ -68,7 +68,7 @@ function Launched({ c, onAnother }: { c: Campaign; onAnother: () => void }) {
       </div>
       <h1 className="mt-5 text-3xl font-semibold tracking-tight">Your campaign is live</h1>
       <p className="mt-3 text-muted-foreground">
-        {formatUnits(BigInt(c.budget), c.decimals, 2)} {config.tokenSymbol} is locked in the contract. Share the link with
+        {formatUnits(BigInt(c.budget), c.decimals, 2)} {config.tokenSymbol} is locked in escrow. Share the link with
         creators — each post is checked about every minute and paid automatically.
       </p>
       <div className="mx-auto mt-8 max-w-sm text-left">
