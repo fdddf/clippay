@@ -3,6 +3,7 @@
 > HackMeridian 2026 · Genesis · Stellar Composed
 
 **Live demo: <https://clippay.umesok.workers.dev>** (Stellar testnet) ·
+[Demo video](https://youtu.be/f8TsMh9pCKw) ·
 [CI](https://github.com/fdddf/clippay/actions) ·
 [Threat model](docs/THREAT_MODEL.md) · [Runbook](docs/RUNBOOK.md)
 

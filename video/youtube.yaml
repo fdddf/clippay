@@ -1,0 +1,36 @@
+# tubectl spec for the demo video: tubectl upload youtube.yaml
+# Paths are relative to this folder; out/ is produced by `pnpm render`.
+file: ./out/clippay-demo.mp4
+title: "ClipPay — pay creators per verified view, on Stellar (HackMeridian 2026)"
+description: |
+  ClipPay is a pay-per-view creator bounty platform on Stellar.
+  Brands lock a budget in a Soroban escrow contract and set a rate per 1,000 views.
+  Creators sign in with a passkey, post a clip, and get paid every minute as their views are verified — no seed phrase, no fees.
+  Unspent budget refunds to the brand. Creators can cash out to a bank through a Stellar anchor (SEP-45 + SEP-24).
+
+  Recorded from the ClipPay app on Stellar testnet; the narration is synthesized.
+
+  Live demo (testnet): https://clippay.hr.edu.kg
+  Code: https://github.com/fdddf/clippay
+
+  0:00 The problem
+  0:21 How ClipPay works
+  0:39 A creator joins with a passkey
+  0:59 Payouts and receipts
+  1:15 A brand launches a campaign
+  1:33 The brand dashboard
+  1:49 Earnings and cash-out to a bank
+  2:06 Architecture
+tags: [stellar, soroban, passkey, creator economy, pay per view, escrow, hackmeridian, web3 payments]
+category_id: "28"
+privacy: unlisted
+made_for_kids: false
+language: en
+audio_language: en
+notify_subscribers: false
+thumbnail: ./out/thumbnail.png
+playlists: []
+captions:
+  - file: ./out/clippay-demo.srt
+    language: en
+    name: English

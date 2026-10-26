@@ -6,6 +6,8 @@
 
 ## 已渲染的版本
 
+已上传到 YouTube（不公开，有链接即可观看）：<https://youtu.be/f8TsMh9pCKw>，上传配置在 [video/youtube.yaml](../video/youtube.yaml)（`tubectl upload youtube.yaml`，含字幕、章节和缩略图）。
+
 `video/` 里有一个自动生成的版本（2:22，1080p）：用无头 Chrome 在线上网站真实操作录屏，旁白由本地 Kokoro（am_liam）生成，Remotion 合成字幕和结尾的架构动画。做法和重新生成的命令见 [video/README.md](../video/README.md)。产物在 `video/out/`（不进 git）：`clippay-demo.mp4` 和字幕 `clippay-demo.srt`。
 
 和下面手动录制方案的区别：创作者用 Chrome 的虚拟 passkey 认证器签名（钱包创建、提交、到账、提现都是真实的测试网交易）；品牌建活动用开发环境的只读预览，停在 Review 页，没有真的用 Freighter 签名。旁白相应改成"One signature in Freighter puts the budget in escrow"，画面不显示签名过程。如果想展示真实的 Freighter 签名，可以按下面的方案手动补录第 5 段。
