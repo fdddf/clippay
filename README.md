@@ -5,7 +5,8 @@
 **Live demo: <https://clippay.hr.edu.kg>** (Stellar testnet) ·
 [Demo video](https://youtu.be/f8TsMh9pCKw) ·
 [CI](https://github.com/fdddf/clippay/actions) ·
-[Threat model](docs/THREAT_MODEL.md) · [Runbook](docs/RUNBOOK.md)
+[Threat model](docs/THREAT_MODEL.md) · [Runbook](docs/RUNBOOK.md) ·
+[Mainnet plan](docs/MAINNET.md)
 
 Try it: open a campaign → **Sign in** → **Create passkey wallet** (Face ID / Touch ID) →
 paste any YouTube link → **Verify views now**. You're paid in seconds with no wallet
@@ -266,6 +267,9 @@ smart-account-kit and the relay are unaudited — testnet only. Next steps:
 - Spending-limit policy on creator wallets (OZ policy contract) for safer withdrawals
 - Multiple verifiers / oracle quorum, and TikTok + Instagram providers
 - Brand-side dispute window before each payout
+
+What has to happen before real money goes in — blockers, config changes, operations and
+a phased rollout: [docs/MAINNET.md](docs/MAINNET.md).
 
 ## Built during HackMeridian
 
