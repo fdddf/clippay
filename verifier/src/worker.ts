@@ -26,9 +26,16 @@ export class VerifierObject extends DurableObject<Env> {
   private verifier?: Promise<Verifier>;
 
   private get(): Promise<Verifier> {
-    this.verifier ??= createVerifier(
-      envReader(this.env as unknown as Record<string, string | undefined>),
-    ).catch((e) => {
+    this.verifier ??= createVerifier(envReader(this.env as unknown as Record<string, string | undefined>), {
+      campaignStart: async (id) => {
+        const row = await this.env.DB.prepare(
+          "SELECT MIN(ts) AS ts FROM events WHERE type = 'campaign_created' AND campaign = ?",
+        )
+          .bind(id)
+          .first<{ ts: number | null }>();
+        return row?.ts ?? undefined;
+      },
+    }).catch((e) => {
       this.verifier = undefined;
       throw e;
     });

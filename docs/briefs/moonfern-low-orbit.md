@@ -9,6 +9,6 @@
 - Credit "Low Orbit — Moonfern Records" on screen or in the caption.
 
 **Must include**
-- `#ad` and your `clippay:XXXXXX` tag in the description.
+- `#ad` and your `clippay:…` tag in the description.
 
 **Pays** 0.5 XLM per 1,000 verified views, up to 25 XLM per creator.

@@ -10,7 +10,7 @@ game for iOS and Android, ahead of launch week.
 - Show the title screen or say "Tidewalker" in the first 5 seconds.
 
 **Must include**
-- `#ad` in the title or description, and your `clippay:XXXXXX` tag (shown on the campaign page).
+- `#ad` in the title or description, and your `clippay:…` tag (shown on the campaign page).
 - The store link from the description of our trailer.
 
 **Pays** 0.8 XLM per 1,000 verified views, up to 40 XLM per creator.

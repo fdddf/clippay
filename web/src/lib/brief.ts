@@ -46,9 +46,16 @@ export interface Brief {
   demo?: boolean;
 }
 
+/**
+ * Address characters in an ownership tag. The first two carry little entropy
+ * (version byte), the rest 5 bits each: about 2^72 addresses to grind through
+ * to match someone else's tag, out of reach even for GPU vanity generators.
+ */
+export const TAG_CHARS = 16;
+
 /** The tag a creator puts in their post's description to prove it's theirs. */
 export function ownershipTag(creator: string): string {
-  return `clippay:${creator.slice(0, 6)}`;
+  return `clippay:${creator.slice(0, TAG_CHARS)}`;
 }
 
 export const LIMITS = { name: 60, summary: 200, body: 8000, rule: 120, rules: 10, url: 300 };

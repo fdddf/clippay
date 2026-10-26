@@ -107,6 +107,22 @@ export function youtubeProvider(apiKey: string): ViewProvider {
 
 export { ownershipTag } from "../../web/src/lib/brief.ts";
 
+/**
+ * The post a URL points at, so differently written links to one post compare
+ * equal: `youtube:<video id>` for YouTube, else host and path without query,
+ * fragment, `www.`/`m.` or a trailing slash.
+ */
+export function postKey(raw: string): string {
+  const id = youtubeId(raw);
+  if (id) return `youtube:${id}`;
+  try {
+    const u = new URL(raw.trim());
+    return `${u.hostname.replace(/^(www|m)\./, "")}${u.pathname.replace(/\/+$/, "")}`;
+  } catch {
+    return raw.trim();
+  }
+}
+
 export function youtubeId(raw: string): string | null {
   try {
     const u = new URL(raw);

@@ -11,6 +11,6 @@ group trips.
 - Your honest take in the last 10 seconds — criticism is fine.
 
 **Must include**
-- `#ad` and your `clippay:XXXXXX` tag in the description.
+- `#ad` and your `clippay:…` tag in the description.
 
 **Pays** 1.2 XLM per 1,000 verified views, up to 30 XLM per creator.

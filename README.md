@@ -88,7 +88,13 @@ Problems the creator can fix put the post on hold until fixed; anti-fraud flags 
 until a reviewer approves it (`POST /review/:id/:creator`). The campaign page shows
 creators and brands why a post is on hold.
 
-- **Ownership** — description contains `clippay:<first 6 chars of the creator's address>`
+- **Ownership** — description contains `clippay:<first 16 chars of the creator's address>`
+  (about 2^72 addresses to grind through to forge someone else's)
+- **One payee per post** — if several creators enter the same video in a campaign, the
+  first whose tag is on it is paid; the others are held for review
+- **New posts only** — a post published before the campaign started is held for review
+  (views are paid from zero, so an old video would be paid for views it earned elsewhere;
+  `REQUIRE_NEW_POST`)
 - **Ad disclosure** — title or description contains `#ad` / `#sponsored`
 - **Anti-fraud v1** — view spikes (`MAX_VIEWS_PER_HOUR`), low likes per view, channels
   younger than `MIN_CHANNEL_AGE_DAYS`

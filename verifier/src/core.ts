@@ -12,8 +12,8 @@ import {
   type PoolClient,
   type Submission,
 } from "@clippay/pool-client";
-import { mockProvider, youtubeProvider, type PostStats, type ViewProvider } from "./views.ts";
-import { check, type Previous, type Rules } from "./checks.ts";
+import { mockProvider, postKey, youtubeProvider, type PostStats, type ViewProvider } from "./views.ts";
+import { check, claimPost, showsTag, type Previous, type Rules, type Start } from "./checks.ts";
 import { createRelay } from "./relay.ts";
 import { rateLimiter } from "./limits.ts";
 import { deployment } from "@clippay/deployments";
@@ -52,7 +52,12 @@ export interface PostStatus {
 
 export type Verifier = Awaited<ReturnType<typeof createVerifier>>;
 
-export async function createVerifier(env: EnvReader) {
+export interface VerifierHooks {
+  /** When a campaign was created (unix seconds), if known; the Worker reads it from its event index. */
+  campaignStart?: (id: number) => Promise<number | undefined>;
+}
+
+export async function createVerifier(env: EnvReader, hooks: VerifierHooks = {}) {
   // Contract IDs come from deployments/<network>.json; env vars may override them.
   const d = deployment(env("NETWORK", "testnet"));
   const keypair = Keypair.fromSecret(env("VERIFIER_SECRET"));
@@ -96,6 +101,7 @@ export async function createVerifier(env: EnvReader) {
     minLikeRatio: Number(env("MIN_LIKE_RATIO", "0.002")),
     minViewsForEngagement: Number(env("MIN_VIEWS_FOR_ENGAGEMENT", "5000")),
     minChannelAgeDays: Number(env("MIN_CHANNEL_AGE_DAYS", "7")),
+    requireNewPost: flag("REQUIRE_NEW_POST", "true"),
   };
 
   const status = new Map<string, PostStatus>();
@@ -103,13 +109,36 @@ export async function createVerifier(env: EnvReader) {
   /** Post metadata from the latest fetch, for the checks. */
   const lastStats = new Map<string, Omit<PostStats, "views">>();
   const key = (id: number, creator: string) => `${id}:${creator}`;
+  /** `${campaign}:${postKey}` → the creator who owns that post. */
+  const owners = new Map<string, string>();
+  /** Campaign creation times, once known. */
+  const starts = new Map<number, number>();
+
+  /**
+   * When campaign `id` started: its creation time if known, else its first
+   * entry, which is only an upper bound.
+   */
+  async function startOf(id: number, subs: Submission[]): Promise<Start | undefined> {
+    if (!rules.requireNewPost || !provider.hasMetadata) return;
+    if (!starts.has(id)) {
+      const at = await hooks.campaignStart?.(id).catch(() => undefined);
+      if (at !== undefined) starts.set(id, at);
+    }
+    const at = starts.get(id);
+    if (at !== undefined) return { at, exact: true };
+    if (!subs.length) return;
+    return { at: Math.min(...subs.map((s) => Number(s.submitted_at))), exact: false };
+  }
 
   /** Runs the checks for one post; returns why it can't be paid, if it can't. */
-  function holdReason(id: number, sub: Submission, views: bigint): string | undefined {
+  function holdReason(id: number, sub: Submission, views: bigint, start?: Start): string | undefined {
     const k = key(id, sub.creator);
     const now = Date.now() / 1000;
     const prev = status.get(k);
-    const hold = check(sub, { views, ...lastStats.get(k) }, lastSeen.get(k), rules, now);
+    const stats = { views, ...lastStats.get(k) };
+    const hold = check(sub, stats, lastSeen.get(k), rules, now, start);
+    const taken = claimPost(owners, `${id}:${postKey(sub.url)}`, sub.creator, showsTag(sub, stats, rules));
+    if (taken) hold.review.push(taken);
     const review = [...new Set([...(prev?.review ?? []), ...hold.review])];
     const s: PostStatus = {
       views: views.toString(),
@@ -132,7 +161,12 @@ export async function createVerifier(env: EnvReader) {
     const now = BigInt(Math.floor(Date.now() / 1000));
     if (campaign.refunded || now > campaign.deadline + grace) return [];
 
-    const subs = (await allSubmissions(client, campaign)).filter((x) => !creator || x.creator === creator);
+    const all = await allSubmissions(client, campaign);
+    // A post already paid out belongs to whoever was paid (in entry order), so
+    // ownership survives a restart.
+    for (const s of all) if (s.paid + s.fee > 0n) claimPost(owners, `${id}:${postKey(s.url)}`, s.creator, true);
+    const start = await startOf(id, all);
+    const subs = all.filter((x) => !creator || x.creator === creator);
     const out: SettleResult[] = [];
     for (const sub of subs) {
       const r: SettleResult = { creator: sub.creator };
@@ -145,7 +179,7 @@ export async function createVerifier(env: EnvReader) {
           const { views, ...meta } = await provider.stats(sub);
           lastStats.set(key(id, sub.creator), meta);
           r.views = views.toString();
-          const held = holdReason(id, sub, views);
+          const held = holdReason(id, sub, views, start);
           if (held) r.skipped = held;
           else if (views <= sub.views) r.skipped = "no new views";
           else if (owed(campaign, sub, views) === 0n) r.skipped = "nothing owed yet";

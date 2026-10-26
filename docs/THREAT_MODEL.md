@@ -35,7 +35,8 @@ in the contract, payouts go straight to creators.
 | T3 | **Owner key leak** | High | Owner cannot move campaign funds; fee hard-capped at 20% and fixed per campaign; refunds work while paused | Multisig owner; upgrade timelock |
 | T4 | **Malicious upgrade** | High | Owner-only; `version()` + `migrate` are on-chain and visible; error codes frozen | SEP-55 verifiable builds so every Wasm hash maps to a commit; timelock |
 | T5 | **Sponsor drained** | Medium | Host-function allow-list, address-only auth, simulation before paying, per-tx fee cap, per-IP and per-wallet rate limits, low-balance alert | Move to OZ Channels; per-wallet daily budget |
-| T6 | **Creator claims someone else's post** | Medium | Ownership tag in the description must match the creator's address | OAuth channel binding (P2-5) |
+| T6 | **Creator claims someone else's post** | Medium | Ownership tag in the description must match the first 16 characters of the creator's address (~2^72 to grind a matching one); one payee per post per campaign: later entries of a post already claimed are held for review | OAuth channel binding (P2-5) |
+| T6b | **Old post entered for its back catalogue of views** (views are paid from zero) | High | Posts published before the campaign started are held for review; the start comes from the indexed `campaign_created` event, or the campaign's first entry as an upper bound when that isn't indexed | Record `created_at` on-chain in the next contract upgrade |
 | T7 | **Storage archival** of a long campaign | Medium | Entries extended to end of settlement + margin; instance renewed at half-life; anyone can call `extend` | Monitoring of TTLs (P1-B4) |
 | T8 | **Unbounded storage / fee griefing** (many creators) | Medium | One fixed-size entry per creator; submit cost independent of creator count (tested at 200+); reads paged (≤ 50) | — |
 | T9 | **Fee-on-transfer or malicious token** | Medium | Token allow-list (owner); decimals recorded per campaign | — |

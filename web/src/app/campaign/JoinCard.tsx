@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import type { CampaignDetail } from "@/lib/api-types";
-import { PLATFORM_LABEL, ownershipTag } from "@/lib/brief";
+import { PLATFORM_LABEL, TAG_CHARS, ownershipTag } from "@/lib/brief";
 import { config, explorer } from "@/lib/network";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "../errors";
@@ -50,7 +50,7 @@ export function JoinCard({ c }: { c: CampaignDetail }) {
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const keep = `${100 - c.feeBps / 100}%`;
-  const tag = wallet ? ownershipTag(wallet.address) : "clippay:XXXXXX";
+  const tag = wallet ? ownershipTag(wallet.address) : `clippay:${"X".repeat(TAG_CHARS)}`;
   const platform = c.brief?.platform;
   let host = "";
   try {
@@ -124,7 +124,7 @@ export function JoinCard({ c }: { c: CampaignDetail }) {
               {platform && platform !== "any" ? ` on ${PLATFORM_LABEL[platform]}` : ""} with this in the description:
             </p>
             <div className="mt-2 flex items-center gap-2 rounded-lg border bg-background py-1.5 pr-1.5 pl-3">
-              <code className="min-w-0 flex-1 truncate font-mono text-sm">{tag} #ad</code>
+              <code className="min-w-0 flex-1 font-mono text-sm break-all">{tag} #ad</code>
               <Button type="button" variant="ghost" size="icon-sm" onClick={copyTag} aria-label="Copy tag">
                 {copied ? <Check /> : <Copy />}
               </Button>
