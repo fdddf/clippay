@@ -2,7 +2,7 @@
 
 > HackMeridian 2026 · Genesis · Stellar Composed
 
-**Live demo: <https://clippay.umesok.workers.dev>** (Stellar testnet) ·
+**Live demo: <https://clippay.hr.edu.kg>** (Stellar testnet) ·
 [Demo video](https://youtu.be/f8TsMh9pCKw) ·
 [CI](https://github.com/fdddf/clippay/actions) ·
 [Threat model](docs/THREAT_MODEL.md) · [Runbook](docs/RUNBOOK.md)
@@ -184,7 +184,7 @@ Check the whole passkey path without a browser (software passkey, real testnet):
 ```bash
 cd verifier && pnpm e2e:passkey 0   # creates a wallet, submits to campaign 0, settles
 cd verifier && pnpm e2e:anchor 2    # SEP-45 + SEP-24 cash-out; prints the anchor form URL to complete
-VERIFIER_URL=https://clippay.umesok.workers.dev/api pnpm e2e:passkey 0   # against the live relay
+VERIFIER_URL=https://clippay.hr.edu.kg/api pnpm e2e:passkey 0   # against the live relay
 ```
 
 ### Cloudflare

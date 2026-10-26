@@ -3,7 +3,7 @@
 > 版本 v2 · 2026-10-25 18:40 WET（v1：16:40）· 作者：产品负责人（Claude，代拟）
 > 状态：执行中。P0 已完成 6/7 项（只差视频和 deck），P1 的限时代码部分已完成。最新进度见[第 8 节](#8-实施顺序与进度)。
 >
-> 在线演示：<https://clippay.umesok.workers.dev> · 仓库：<https://github.com/fdddf/clippay>
+> 在线演示：<https://clippay.hr.edu.kg> · 仓库：<https://github.com/fdddf/clippay>
 
 ## 0. 这份计划回答什么
 
@@ -306,7 +306,7 @@ clippay/
 
 | | |
 |---|---|
-| 网站 + API | <https://clippay.umesok.workers.dev>（Cloudflare Worker，账号为当前 wrangler 登录账号） |
+| 网站 + API | <https://clippay.hr.edu.kg>（Cloudflare Worker 的自定义域，账号为当前 wrangler 登录账号；<https://clippay.umesok.workers.dev> 同样可用） |
 | 演示合约（v2） | `CBYEMM7I4OXD5DTWGKCKT7NDLRB357W5Q32ZUX3Z7E5MQP37UQQYWVXT`，Wasm `0b58c98a…`，与仓库代码一致 |
 | 预发合约（v2，做过链上升级） | `CAH4SE2CYMGWWTEY4HKJOQ2XAYFEJLC64DR4VZBWX2YBFEC3IVYNGAR2` |
 | 线上验证者 | `GCDOZOD74VZJB7FPKYPGEWK5V4QDIPKPRR5CWNMEHARVQCSNDVVOER6I`（`clippay-verifier-prod`，只在 Worker secret 里） |
@@ -355,7 +355,7 @@ clippay/
 4. 赛后：C10 可验证构建、C7 争议窗口、V1 接真实 YouTube 数据，以及第 4 节其余条目。
 
 **需要留意：**
-- 有人在 18:06 部署之后给这个 Worker 绑定了自定义域名 `clippay.hr.edu.kg`，不是本会话做的。如果不是你加的，请在 Cloudflare 控制台确认。
+- 这个 Worker 绑定的自定义域名 `clippay.hr.edu.kg` 是你添加的（已确认），现在是对外的线上地址。
 - 公网 e2e 测试在 Kitebase 活动里留下一条 `e2e-…` 链接的提交，已经上链，无法删除。
 - 另一个会话在 5173/8787 端口运行的旧服务仍指向旧合约。本地验证服务使用 `clippay-verifier` 密钥，已不能给线上合约结算，因此不会和线上验证者冲突。
 - 本地开发要给新合约结算时，可以用 `clippay-verifier-prod` 的密钥，但不要和线上 Worker 同时运行。

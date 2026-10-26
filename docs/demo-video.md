@@ -1,7 +1,7 @@
 # ClipPay 演示视频脚本（P0-6）
 
 > 时长 3:00 · 英文旁白（约 430 词，每分钟 145 词左右）· 1080p 或以上，16:9
-> 线上：<https://clippay.umesok.workers.dev> · 仓库：<https://github.com/fdddf/clippay>
+> 线上：<https://clippay.hr.edu.kg> · 仓库：<https://github.com/fdddf/clippay>
 > 配套 deck（10 页，可下载 PPTX / PDF）：<https://claude.ai/artifact/TP72iKFWvUCQPgvMxvBcGR>（默认私有，提交前在页面的 Share 菜单里开启分享）。第 10 页的团队信息是占位符，需要填写。
 
 ## 已渲染的版本

@@ -4,7 +4,7 @@
 > v1.1 变更：首页改为独立的 landing page；`/me` 与 `/brand` 合并为统一用户中心 `/dashboard`；样式改用 Tailwind CSS + shadcn/ui。
 > v1.2 变更：不做"快速简化版"。赛前按完整质量实施第 12.1 节的范围，包括用户中心和活动市场需要的事件索引（P1-B3）和链下元数据（P1-F7）；每个阶段通过质量门槛才合并。
 > 状态：规划，待确认后分阶段实施。每项有编号（UX-x.y），实施时在第 12 节勾选。
-> 关联：[improvement-plan.md](improvement-plan.md)（产品与工程路线）· 在线版本 <https://clippay.umesok.workers.dev>
+> 关联：[improvement-plan.md](improvement-plan.md)（产品与工程路线）· 在线版本 <https://clippay.hr.edu.kg>
 
 ## 0. 目标
 
@@ -452,7 +452,7 @@
 
 **交接说明（2026-10-25 23:30 WET 更新，截止 10/26 12:00 WET）：**
 
-- 线上：https://clippay.umesok.workers.dev（自定义域 clippay.hr.edu.kg），A1–A9 均已部署。
+- 线上：https://clippay.hr.edu.kg（Worker 的 workers.dev 地址 https://clippay.umesok.workers.dev 同样可用），A1–A9 均已部署。
 - 剩余工作：**P0-6 视频脚本 + deck**（用户录制，需在截止前留出时间）。演示路线建议：landing → `/campaigns` → `/c/:id`（参加卡、排行、分享图）→ `/new` 三步向导 → `/dashboard`（概览、活动管理图表、收入、钱包提现四步）。
 - 可选的后续优化：已登录用户进入应用时，恢复 passkey 会话需要加载钱包库和 Stellar SDK（约 140 KB gzip）；可以先用本地记住的地址渲染只读界面，签名时再加载。
 - 未在自动化浏览器里验证的部分（需要真实 passkey 或 Freighter 签名）：`/new` 最终签名上链、参加活动提交、追加预算 / 退款、设置页保存资料、提现。签名前的流程和失败路径都已验证；签名调用与旧版应用相同。建议录视频前用真机走一遍。

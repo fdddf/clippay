@@ -18,7 +18,7 @@ every campaign once a minute from its own alarm; the cron trigger only re-arms i
 pnpm deploy:cloudflare                         # build web, deploy Worker, push secrets
 cd verifier && pnpm exec wrangler tail clippay # live logs
 cd verifier && pnpm exec wrangler deployments list
-curl -s https://clippay.umesok.workers.dev/api/health
+curl -s https://clippay.hr.edu.kg/api/health
 ```
 
 Secrets (`VERIFIER_SECRET`, `SPONSOR_SECRET`, `REVIEW_TOKEN`) are pushed by the deploy
