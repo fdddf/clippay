@@ -104,7 +104,7 @@ export function Architecture({ scene }: { scene: Scene }) {
             Pay creators for views that <span style={{ color: C.indigoLight }}>actually happen.</span>
           </div>
           <div style={{ marginTop: 56, display: "flex", flexDirection: "column", gap: 14, fontFamily: "'JetBrains Mono', Menlo, monospace", fontSize: 34, color: C.light }}>
-            <div>clippay.umesok.workers.dev</div>
+            <div>clippay.hr.edu.kg</div>
             <div style={{ color: C.muted }}>github.com/fdddf/clippay</div>
           </div>
           <div style={{ color: C.indigoLight, fontSize: 26, marginTop: 48, letterSpacing: 3, textTransform: "uppercase", fontWeight: 600 }}>

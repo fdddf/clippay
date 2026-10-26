@@ -116,7 +116,7 @@ Brands lock a budget in a Soroban escrow contract and set a rate per 1,000 views
 Creators sign in with a passkey, post a clip, and get paid every minute as views are verified — no seed phrase, no fees.
 Unspent budget refunds to the brand. Creators can cash out to a bank through a Stellar anchor (SEP-45 + SEP-24).
 
-Live demo (testnet): https://clippay.umesok.workers.dev
+Live demo (testnet): https://clippay.hr.edu.kg
 Code: https://github.com/fdddf/clippay
 
 0:00 The problem
