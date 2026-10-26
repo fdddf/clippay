@@ -1,0 +1,24 @@
+{
+  "name": "clippay-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record": "node scripts/record.mjs",
+    "narrate": "ESPEAK_DATA_PATH=/opt/homebrew/share/espeak-ng-data $KOKORO_PY scripts/narrate.py",
+    "studio": "remotion studio",
+    "render": "node scripts/footage.mjs && remotion render Demo out/clippay-demo.raw.mp4 --codec h264 --crf 18 && ffmpeg -y -loglevel error -i out/clippay-demo.raw.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -ar 48000 -c:a aac -b:a 192k out/clippay-demo.mp4 && node scripts/srt.mjs",
+    "still": "remotion still Demo",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.536",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.536"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "playwright-core": "1.64.1",
+    "typescript": "5.9.3"
+  }
+}

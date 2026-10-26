@@ -4,6 +4,12 @@
 > 线上：<https://clippay.umesok.workers.dev> · 仓库：<https://github.com/fdddf/clippay>
 > 配套 deck（10 页，可下载 PPTX / PDF）：<https://claude.ai/artifact/TP72iKFWvUCQPgvMxvBcGR>（默认私有，提交前在页面的 Share 菜单里开启分享）。第 10 页的团队信息是占位符，需要填写。
 
+## 已渲染的版本
+
+`video/` 里有一个自动生成的版本（2:22，1080p）：用无头 Chrome 在线上网站真实操作录屏，旁白由本地 Kokoro（am_liam）生成，Remotion 合成字幕和结尾的架构动画。做法和重新生成的命令见 [video/README.md](../video/README.md)。产物在 `video/out/`（不进 git）：`clippay-demo.mp4` 和字幕 `clippay-demo.srt`。
+
+和下面手动录制方案的区别：创作者用 Chrome 的虚拟 passkey 认证器签名（钱包创建、提交、到账、提现都是真实的测试网交易）；品牌建活动用开发环境的只读预览，停在 Review 页，没有真的用 Freighter 签名。旁白相应改成"One signature in Freighter puts the budget in escrow"，画面不显示签名过程。如果想展示真实的 Freighter 签名，可以按下面的方案手动补录第 5 段。
+
 ## 录制前准备（预计 30 分钟）
 
 数字会随时间变化（模拟播放量每分钟都在涨），旁白里不念具体金额，只念屏幕上能看到的结构。

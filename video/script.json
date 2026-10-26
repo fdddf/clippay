@@ -1,0 +1,47 @@
+{
+  "title": "ClipPay — pay creators per verified view, on Stellar",
+  "voice": "am_liam",
+  "speed": 1.0,
+  "scenes": [
+    {
+      "id": "problem",
+      "chapter": "The problem",
+      "text": "Brands already pay creators per thousand views to clip and post about their products. But the money moves badly both ways. Brands prepay agencies and hope the views are real. Creators, many in Latin America, Southeast Asia and Africa, wait weeks to get paid and lose a slice to payout fees, if they can get paid at all."
+    },
+    {
+      "id": "solution",
+      "chapter": "How ClipPay works",
+      "text": "ClipPay fixes both sides. A brand locks its budget in a Soroban escrow contract and sets a rate per thousand views. Creators post, and the contract pays them as their views are verified, every minute, straight to their wallet. Whatever isn't earned goes back to the brand. And every number here can be checked on chain."
+    },
+    {
+      "id": "join",
+      "chapter": "A creator joins with a passkey",
+      "text": "Here's the creator side. A creator browses open campaigns, picks one, and sees exactly what to make and how much they can earn. To join, they sign in with a passkey. That creates a smart wallet on Stellar, with no seed phrase, no extension, and no fees, because ClipPay sponsors them. They post their clip with their personal tag, and paste the link."
+    },
+    {
+      "id": "payout",
+      "chapter": "Payouts and receipts",
+      "text": "Views are checked every minute. Each check pays the difference between what a post has earned and what it has already been paid, in seconds, for a fraction of a cent. Every payout has a receipt on Stellar. And each campaign gets its own share card, so brands can post the link anywhere."
+    },
+    {
+      "id": "launch",
+      "chapter": "A brand launches a campaign",
+      "text": "Now the brand. Launching a campaign takes three steps. The brief, with a live preview of what creators will see. The budget, where the calculator shows how many views and creators it buys. And a review of exactly what gets locked, the fees, and when unspent budget can be refunded. One signature in Freighter puts the budget in escrow."
+    },
+    {
+      "id": "manage",
+      "chapter": "The brand dashboard",
+      "text": "In the dashboard, the brand sees what it actually paid per thousand views, spend and views over time, and every creator's post and status. Posts that break the rules are held, with a reason. When the campaign ends, the rest of the budget comes back with one click."
+    },
+    {
+      "id": "cashout",
+      "chapter": "Earnings and cash-out to a bank",
+      "text": "Creators get their own dashboard, with every payout and its receipt. And they can cash out to a bank. ClipPay connects to a Stellar anchor using SEP forty-five and SEP twenty-four. The creator confirms with their passkey, and the anchor pays out locally."
+    },
+    {
+      "id": "outro",
+      "chapter": "Architecture",
+      "text": "Under the hood: a Soroban escrow contract built on OpenZeppelin, passkey smart accounts, sponsored fees, contract events indexed on Cloudflare, and an anchor for cash-out. ClipPay. Pay creators for views that actually happen. Try it live on Stellar testnet."
+    }
+  ]
+}
